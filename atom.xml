@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Lvjia</title>
+  
+  <subtitle>Lvjia</subtitle>
+  <link href="http://example.com/atom.xml" rel="self"/>
+  
+  <link href="http://example.com/"/>
+  <updated>2025-08-27T14:21:42.388Z</updated>
+  <id>http://example.com/</id>
+  
+  <author>
+    <name>lvting.chi</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>1、计算机组成原理初窥: 底层逻辑</title>
+    <link href="http://example.com/2025/08/27/ji-suan-ji-zu-cheng-yuan-li-chu-kui-1-liao-jie-di-ceng-luo-ji/"/>
+    <id>http://example.com/2025/08/27/ji-suan-ji-zu-cheng-yuan-li-chu-kui-1-liao-jie-di-ceng-luo-ji/</id>
+    <published>2025-08-27T14:14:52.000Z</published>
+    <updated>2025-08-27T14:21:42.388Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;1、计算机组成原理初窥-底层逻辑&quot;&gt;&lt;a href=&quot;#1、计算机组成原理初窥-底层逻辑&quot; class=&quot;headerlink&quot; title=&quot;1、计算机组成原理初窥: 底层逻辑&quot;&gt;&lt;/a&gt;1、计算机组成原理初窥: 底层逻辑&lt;/h1&gt;&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="计算机组成原理" scheme="http://example.com/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/"/>
+    
+    
+    <category term="基础知识" scheme="http://example.com/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>C 语言位操作</title>
+    <link href="http://example.com/2025/08/25/c-yu-yan-yi-wei-cao-zuo/"/>
+    <id>http://example.com/2025/08/25/c-yu-yan-yi-wei-cao-zuo/</id>
+    <published>2025-08-25T13:46:33.000Z</published>
+    <updated>2025-08-25T13:50:35.567Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;C-语言位操作&quot;&gt;&lt;a href=&quot;#C-语言位操作&quot; class=&quot;headerlink&quot; title=&quot;C 语言位操作&quot;&gt;&lt;/a&gt;C 语言位操作&lt;/h1&gt;&lt;p&gt;在 C</summary>
+        
+      
+    
+    
+    
+    
+    <category term="C/C++" scheme="http://example.com/tags/C-C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="http://example.com/2025/08/23/hello-world/"/>
+    <id>http://example.com/2025/08/23/hello-world/</id>
+    <published>2025-08-23T12:23:53.051Z</published>
+    <updated>2025-07-20T06:21:01.976Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>
