@@ -1,0 +1,729 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>7、计算机组成原理: 深入理解高速缓冲存储器（Cache) | Lvjia</title><meta name="author" content="lvting.chi"><meta name="copyright" content="lvting.chi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="深入理解计算机高速缓冲存储器（Cache）前言：为什么需要 Cache？在计算机系统中，CPU 的速度与主存储器（DRAM）的速度之间存在着数量级的差距。这种差距导致 CPU 在等待主存数据时会出现大量的 “空等” 现象，严重制约了整个计算机系统的性能。为了解决这一问题，高速缓冲存储器（Cache）应运而生。 Cache 是一种速度极快、容量较小的存储器，位于 CPU 和主存之间。它利用程序访问的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="7、计算机组成原理: 深入理解高速缓冲存储器（Cache)">
+<meta property="og:url" content="http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/index.html">
+<meta property="og:site_name" content="Lvjia">
+<meta property="og:description" content="深入理解计算机高速缓冲存储器（Cache）前言：为什么需要 Cache？在计算机系统中，CPU 的速度与主存储器（DRAM）的速度之间存在着数量级的差距。这种差距导致 CPU 在等待主存数据时会出现大量的 “空等” 现象，严重制约了整个计算机系统的性能。为了解决这一问题，高速缓冲存储器（Cache）应运而生。 Cache 是一种速度极快、容量较小的存储器，位于 CPU 和主存之间。它利用程序访问的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://lvjia.netlify.app/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-09-21T13:56:21.000Z">
+<meta property="article:modified_time" content="2025-09-24T13:21:21.149Z">
+<meta property="article:author" content="lvting.chi">
+<meta property="article:tag" content="基础知识">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://lvjia.netlify.app/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "7、计算机组成原理: 深入理解高速缓冲存储器（Cache)",
+  "url": "http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/",
+  "image": "http://lvjia.netlify.app/img/butterfly-icon.png",
+  "datePublished": "2025-09-21T13:56:21.000Z",
+  "dateModified": "2025-09-24T13:21:21.149Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "lvting.chi",
+      "url": "http://lvjia.netlify.app"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '7、计算机组成原理: 深入理解高速缓冲存储器（Cache)',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Lvjia" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Lvjia</span></a><a class="nav-page-title" href="/"><span class="site-name">7、计算机组成原理: 深入理解高速缓冲存储器（Cache)</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">7、计算机组成原理: 深入理解高速缓冲存储器（Cache)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-09-21T13:56:21.000Z" title="发表于 2025-09-21 21:56:21">2025-09-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-09-24T13:21:21.149Z" title="更新于 2025-09-24 21:21:21">2025-09-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="深入理解计算机高速缓冲存储器（Cache）"><a href="#深入理解计算机高速缓冲存储器（Cache）" class="headerlink" title="深入理解计算机高速缓冲存储器（Cache）"></a>深入理解计算机高速缓冲存储器（Cache）</h1><h2 id="前言：为什么需要-Cache？"><a href="#前言：为什么需要-Cache？" class="headerlink" title="前言：为什么需要 Cache？"></a>前言：为什么需要 Cache？</h2><p>在计算机系统中，<strong>CPU 的速度</strong>与<strong>主存储器（DRAM）的速度</strong>之间存在着数量级的差距。这种差距导致 CPU 在等待主存数据时会出现大量的 “空等” 现象，严重制约了整个计算机系统的性能。为了解决这一问题，高速缓冲存储器（Cache）应运而生。</p>
+<p>Cache 是一种速度极快、容量较小的存储器，位于 CPU 和主存之间。它利用<strong>程序访问的局部性原理</strong>（即程序在执行时，短期内会重复访问某些指令或数据），将 CPU 近期可能访问的指令和数据预先缓存起来，从而减少 CPU 对主存的直接访问，大幅提升系统性能。</p>
+<h2 id="一、Cache-概述"><a href="#一、Cache-概述" class="headerlink" title="一、Cache 概述"></a>一、Cache 概述</h2><h3 id="1-1-问题的提出"><a href="#1-1-问题的提出" class="headerlink" title="1.1 问题的提出"></a>1.1 问题的提出</h3><p>现代 CPU 的时钟频率已经达到 GHz 级别，而主存（DRAM）的访问速度通常在几十到几百个时钟周期之间。假设 CPU 需要从主存中读取一个数据，主存需要 100 个时钟周期才能返回数据，而在这 100 个时钟周期内，CPU 只能处于等待状态，这无疑是对计算资源的巨大浪费。</p>
+<p>为了避免这种 “空等” 现象，我们需要在 CPU 和主存之间设置一个速度接近 CPU 的存储器，这就是 Cache。它的容量较小，但速度极快，能够存储 CPU 近期最可能访问的指令和数据。</p>
+<p>下图为 CPU、Cache 和主存的关系：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">+-----+        +-------+        +-------+</span><br><span class="line">| CPU | &lt;----&gt; | Cache | &lt;----&gt; | 主存  |</span><br><span class="line">+-----+        +-------+        +-------+</span><br><span class="line">  速度最快       速度快、容量小    速度慢、容量大</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="1-2-程序访问的局部性原理"><a href="#1-2-程序访问的局部性原理" class="headerlink" title="1.2 程序访问的局部性原理"></a>1.2 程序访问的局部性原理</h3><p>Cache 之所以能够有效提升性能，核心在于它利用了<strong>程序访问的局部性原理</strong>。这一原理可以分为以下两种类型：</p>
+<ul>
+<li><strong>时间局部性</strong>：如果一个数据或指令在某一时刻被访问，那么在不久的将来它很可能再次被访问。例如，循环语句中的指令和数据会被反复访问。</li>
+<li><strong>空间局部性</strong>：如果一个数据被访问，那么与它相邻的数据很可能在不久的将来被访问。例如，数组的元素通常被连续访问。</li>
+</ul>
+<p>正是由于程序具有时间和空间局部性，我们可以将近期频繁访问的指令和数据存储在 Cache 中，从而减少 CPU 对主存的访问次数。</p>
+<h2 id="二、Cache-的工作原理"><a href="#二、Cache-的工作原理" class="headerlink" title="二、Cache 的工作原理"></a>二、Cache 的工作原理</h2><h3 id="2-1-主存和-Cache-的编址"><a href="#2-1-主存和-Cache-的编址" class="headerlink" title="2.1 主存和 Cache 的编址"></a>2.1 主存和 Cache 的编址</h3><p>Cache 和主存都是以 <strong>块（Block）</strong> 为单位进行存储的，并且块的大小相同。块的大小通常取一个存取周期内从主存调出的信息长度，例如 CRAY-1 计算机采用 16 体交叉存储，块长取 16 个存储字；IBM 370/168 计算机采用 4 体交叉存储，块长取 4 个存储字(64 位 x 4 = 256位)。</p>
+<p>主存地址和 Cache 地址都可以分为两个部分：</p>
+<ul>
+<li>主存地址：<code>主存块号 + 块内地址</code></li>
+<li>Cache 地址：<code>缓存块号 + 块内地址</code></li>
+</ul>
+<p>下图为主存和 Cache 的编址结构：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">主存储器（容量大、速度低）</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">| 主存块号（m位）| 块内地址（b位）|</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">  共M块              每块B个字</span><br><span class="line"></span><br><span class="line">Cache（容量小、速度高）</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">| 缓存块号（c位）| 块内地址（b位）|</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">  共C块              每块B个字（与主存块大小相同）</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-2-命中与未命中"><a href="#2-2-命中与未命中" class="headerlink" title="2.2 命中与未命中"></a>2.2 命中与未命中</h3><p>当 CPU 发出一个内存访问请求时，首先会检查该地址对应的数据是否在 Cache 中：</p>
+<ul>
+<li><strong>命中（Hit）</strong>：如果数据在 Cache 中，说明主存块已经调入 Cache，并且主存块与缓存块建立了对应关系。此时，CPU 可以直接从 Cache 中读取数据，速度极快。</li>
+<li><strong>未命中（Miss）</strong>：如果数据不在 Cache 中，说明主存块未调入 Cache，主存块与缓存块未建立对应关系。此时，需要从主存中读取数据，并将该主存块调入 Cache（如果 Cache 未满或通过替换算法腾出空间）。</li>
+</ul>
+<p>为了记录主存块与 Cache 块的对应关系，Cache 中每个块都有一个<strong>标记（Tag）</strong>，用于记录与该 Cache 块建立对应关系的主存块号。</p>
+<h3 id="2-3-Cache-的命中率"><a href="#2-3-Cache-的命中率" class="headerlink" title="2.3 Cache 的命中率"></a>2.3 Cache 的命中率</h3><p><strong>命中率（Hit Rate）</strong> 是指 CPU 欲访问的信息在 Cache 中的比率。命中率是衡量 Cache 性能的重要指标，它与 Cache 的容量和块长密切相关：</p>
+<ul>
+<li><strong>Cache 容量</strong>：一般来说，Cache 容量越大，能够缓存的指令和数据越多，命中率越高。但当容量增大到一定程度后，命中率的提升会逐渐趋于平缓，因为程序的局部性是有限的。</li>
+<li><strong>块长</strong>：块长越大，越能利用程序的空间局部性，命中率可能越高。但块长过大也会导致一个块中包含的无用数据增多，反而可能降低命中率。一般来说，每块可取 4~8 个字，具体取值需要根据计算机系统的特点进行优化。</li>
+</ul>
+<p>命中率的计算公式为：</p>
+<p>h = 命中次数 / (命中次数 + 未命中次数)</p>
+<h3 id="2-4-Cache-主存系统的效率"><a href="#2-4-Cache-主存系统的效率" class="headerlink" title="2.4 Cache - 主存系统的效率"></a>2.4 Cache - 主存系统的效率</h3><p>Cache - 主存系统的 <strong>效率（Efficiency）</strong> 是指访问 Cache 的时间与平均访问时间的比率，它反映了 Cache 对系统性能提升的程度。</p>
+<p>设 Cache 的访问时间为t<sub>c</sub>，主存的访问时间为t<sub>m</sub>，命中率为h，则平均访问时间t<sub>avg</sub>为：</p>
+<p>t<sub>avg</sub> = h x t<sub>c</sub> + (1 - h) x t<sub>m</sub></p>
+<p>系统效率e的计算公式为：</p>
+<p>e = (t<sub>c</sub> / t<sub>avg</sub>) x 100% = (t<sub>c</sub> / (h x t<sub>c</sub> + (1 - h) x t<sub>m</sub>)) x100%</p>
+<p>从公式可知，当命中率 h 趋近于 1 时，系统效率 e 趋近于 100%，此时 Cache 对主存的 “加速” 效果最显著。例如，若t<sub>c</sub> = 1ns，t<sub>m</sub> = 100ns，当<code>h = 99%</code>时，平均访问时间t<sub>avg</sub> = 0.99 × 1 + 0.01 × 100 = 1.99ns，系统效率<code>e = 1/1.99 × 100% ≈ 50.25%</code>；若<code>h = 99.9%</code>，则t<sub>avg</sub> = 0.999 × 1 + 0.001 × 100 = 1.099ns，系统效率<code>e ≈ 91%</code>，可见高命中率对提升系统效率的关键作用。</p>
+<h2 id="三、Cache-的基本结构"><a href="#三、Cache-的基本结构" class="headerlink" title="三、Cache 的基本结构"></a>三、Cache 的基本结构</h2><p>Cache 的核心功能是实现 “快速判断命中 - 高效读写数据 - 动态替换块”，其基本结构需围绕这三大功能设计，主要包含以下模块，结合下图可清晰理解各模块的协作关系：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">+------------------------+     +----------------------------------+</span><br><span class="line">|        CPU             |     |        主存-Cache控制逻辑        |</span><br><span class="line">|                        |     |                                  |</span><br><span class="line">|  +------------------+  |     |  +--------------------------+    |</span><br><span class="line">|  |  地址寄存器(MAR) |  |     |  |  地址映射变换机构       |    |</span><br><span class="line">|  +------------------+  |     |  +--------------------------+    |</span><br><span class="line">|          |             |     |             |                   |</span><br><span class="line">|          |             |     |  +--------------------------+    |</span><br><span class="line">|  +------------------+  |     |  |  比较器(Tag Compare)     |    |</span><br><span class="line">|  |  数据寄存器(MDR) |  |&lt;---&gt;|  |                          |    |</span><br><span class="line">|  +------------------+  |     |  +--------------------------+    |</span><br><span class="line">|                        |     |             |                   |</span><br><span class="line">+------------------------+     |  +--------------------------+    |</span><br><span class="line">                               |  |  Cache存储体             |    |</span><br><span class="line">                               |  |  (含数据块+Tag+Valid位)  |    |</span><br><span class="line">                               |  +--------------------------+    |</span><br><span class="line">                               |             |                   |</span><br><span class="line">                               |  +--------------------------+    |</span><br><span class="line">                               |  |  替换机构(Replacement)   |    |</span><br><span class="line">                               |  +--------------------------+    |</span><br><span class="line">                               |                                  |</span><br><span class="line">+------------------------+     +----------------------------------+</span><br><span class="line">|        主存            |                     |</span><br><span class="line">|                        |                     |</span><br><span class="line">|  +------------------+  |                     |</span><br><span class="line">|  |  主存存储体       |  |&lt;--------------------+</span><br><span class="line">|  +------------------+  |</span><br><span class="line">|                        |</span><br><span class="line">+------------------------+</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="3-1-核心模块功能解析"><a href="#3-1-核心模块功能解析" class="headerlink" title="3.1 核心模块功能解析"></a>3.1 核心模块功能解析</h3><ol>
+<li><strong>Cache 存储体</strong>不仅存储从主存调入的数据块，还为每个数据块配套两个关键标识：<ul>
+<li><strong>Tag（标记）</strong>：记录该数据块对应的主存块号，用于命中判断。</li>
+<li><strong>Valid（有效位）</strong>：标记该 Cache 块中的数据是否有效（如系统上电初期，Cache 块数据无效，Valid 位为 0；调入主存块后，Valid 位为 1）。</li>
+</ul>
+</li>
+<li><strong>主存 - Cache 地址映射变换机构</strong>接收 CPU 发出的主存地址，按预设的映射规则（直接映射、全相联映射等），将主存地址拆分为 “Tag + 索引（组地址 / 块地址）+ 块内地址”，并提取 Cache 中对应索引位置的 Tag，送至比较器。</li>
+<li><strong>比较器</strong>将地址映射机构输出的主存 Tag 与 Cache 块的 Tag 进行比较，同时检查 Valid 位：<ul>
+<li>若 Tag 相等且 Valid 位为 1，判定为<strong>命中</strong>，控制 Cache 存储体将对应数据块送至 CPU 的 MDR。</li>
+<li>若 Tag 不相等或 Valid 位为 0，判定为<strong>未命中</strong>，触发主存访问与 Cache 块替换流程。</li>
+</ul>
+</li>
+<li><strong>替换机构</strong>仅在 “未命中且 Cache 满” 时工作，根据替换算法（FIFO、LRU 等）选择一个待替换的 Cache 块，释放空间以调入新的主存块。</li>
+</ol>
+<h2 id="四、Cache-的读写操作"><a href="#四、Cache-的读写操作" class="headerlink" title="四、Cache 的读写操作"></a>四、Cache 的读写操作</h2><p>Cache 的读写操作需平衡 “速度” 与 “数据一致性”（即 Cache 与主存中同一数据的内容必须相同），不同操作场景对应不同的控制逻辑。</p>
+<h3 id="4-1-读操作（最核心的常规操作）"><a href="#4-1-读操作（最核心的常规操作）" class="headerlink" title="4.1 读操作（最核心的常规操作）"></a>4.1 读操作（最核心的常规操作）</h3><p>读操作是 CPU 访问内存最频繁的场景，流程可通过 “步骤 + 图” 双重解析，这样能更好理解数据流向：</p>
+<h4 id="4-1-1-操作步骤（以-32-位地址、块长-4-字为例）"><a href="#4-1-1-操作步骤（以-32-位地址、块长-4-字为例）" class="headerlink" title="4.1.1 操作步骤（以 32 位地址、块长 4 字为例）"></a>4.1.1 操作步骤（以 32 位地址、块长 4 字为例）</h4><ol>
+<li><p>CPU 通过 MAR 发出 32 位主存地址，例如<code>0x12345678</code>。</p>
+</li>
+<li><p>地址映射机构拆分地址：假设采用 4 路组相联映射，Cache 共 1024 组，块长 4 字（16 字节），则地址拆分为：</p>
+<ul>
+<li>Tag：32 位 - 组地址位（10 位，2<sup>10</sup>=1024 组） - 块内地址位（4 位，2<sup>4</sup>=16 字节）= 18 位（对应主存块的高位标识）。</li>
+<li>组地址：10 位（确定 Cache 中的目标组）。</li>
+<li>块内地址：4 位（确定块内的具体字节）。</li>
+</ul>
+</li>
+<li><p>地址映射机构根据组地址，提取该组内 4 个 Cache 块的 Tag 与 Valid 位，送至比较器。</p>
+</li>
+<li><p>比较器将主存 Tag 与 4 个 Cache 块的 Tag 逐一比较：</p>
+<ul>
+<li><p><strong>命中</strong>：找到 Tag 相等且 Valid 位为 1 的 Cache 块，根据块内地址提取对应数据，送至 CPU 的 MDR，读操作结束。</p>
+</li>
+<li><p><strong>未命中</strong>：</p>
+<ul>
+<li>若 Cache 未满：直接向主存发送地址，读取对应主存块，同时将该主存块（含 Tag）写入 Cache 的空闲块，Valid 位置 1；主存将数据送至 CPU 的 MDR，操作结束。</li>
+<li>若 Cache 已满：替换机构按算法选择一个待替换块，若该块为 “脏块”（写回法中被修改过），需先将其写回主存；再从主存读取新块写入 Cache，数据送至 CPU 的 MDR，操作结束。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="4-1-2-读操作数据流向"><a href="#4-1-2-读操作数据流向" class="headerlink" title="4.1.2 读操作数据流向"></a>4.1.2 读操作数据流向</h4><figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU（MAR发地址）</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">地址映射机构（拆分地址：Tag+组地址+块内地址）</span><br><span class="line">   |</span><br><span class="line">   |---&gt; 按组地址找Cache组，提取组内Tag+Valid位</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">比较器（Tag对比 + Valid位检查）</span><br><span class="line">   |</span><br><span class="line">   |-- 命中 --&gt; Cache存储体（按块内地址取数据）--&gt; CPU（MDR）</span><br><span class="line">   |</span><br><span class="line">   |-- 未命中 --&gt; 主存（按地址读主存块）</span><br><span class="line">                   |</span><br><span class="line">                   |-- Cache未满 --&gt; 直接写入Cache空闲块（Valid=1）--&gt; 数据送CPU</span><br><span class="line">                   |</span><br><span class="line">                   |-- Cache已满 --&gt; 替换机构选块（脏块先写回主存）--&gt; 写入新块 --&gt; 数据送CPU</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="4-2-写操作（核心是保证数据一致性）"><a href="#4-2-写操作（核心是保证数据一致性）" class="headerlink" title="4.2 写操作（核心是保证数据一致性）"></a>4.2 写操作（核心是保证数据一致性）</h3><p>写操作需解决 “CPU 修改 Cache 数据后，主存数据是否同步更新” 的问题，主流有两种策略：写直达法与写回法，两者在速度、复杂度上各有取舍。</p>
+<h4 id="4-2-1-写直达法（Write-Through）"><a href="#4-2-1-写直达法（Write-Through）" class="headerlink" title="4.2.1 写直达法（Write-Through）"></a>4.2.1 写直达法（Write-Through）</h4><ul>
+<li><p><strong>核心逻辑</strong>：CPU 写数据时，同时写入 Cache 和主存，确保两者数据实时一致。</p>
+</li>
+<li><p>操作步骤：</p>
+<ol>
+<li>CPU 发出 “写地址 + 写数据”，地址映射机构拆分地址并判断命中：<ul>
+<li>命中：将数据写入 Cache 对应块，同时向主存发送地址与数据，主存更新后写操作结束。</li>
+<li>未命中：（可选策略）直接将数据写入主存，不更新 Cache（称为 “写不分配”），或先将主存块调入 Cache 再写入（称为 “写分配”，较少用）。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p><strong>写直达法数据流向图</strong></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU（发写地址+写数据）</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">地址映射机构（拆分地址，判断命中）</span><br><span class="line">   |</span><br><span class="line">   |-- 命中 --&gt; Cache（写数据） AND 主存（写数据） --&gt; 操作结束</span><br><span class="line">   |</span><br><span class="line">   |-- 未命中 --&gt; 主存（直接写数据，不更新Cache） --&gt; 操作结束</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><p>优缺点：</p>
+<ul>
+<li>优点：实现简单，无需 “脏位”（无需标记块是否被修改）；Cache 块替换时无需额外写主存，因为主存已同步。</li>
+</ul>
+</li>
+<li><p>缺点：写操作速度受主存限制（需等待主存写入完成），频繁写操作会占用总线带宽，降低系统整体速度。</p>
+</li>
+</ul>
+<h4 id="4-2-2-写回法（Write-Back）"><a href="#4-2-2-写回法（Write-Back）" class="headerlink" title="4.2.2 写回法（Write-Back）"></a>4.2.2 写回法（Write-Back）</h4><ul>
+<li><p><strong>核心逻辑</strong>：CPU 写数据时仅写入 Cache，不立即更新主存；仅当该 Cache 块被替换时，才将其写回主存（需通过 “脏位” 标记是否被修改）。</p>
+</li>
+<li><p>关键标识：脏位（Dirty Bit），每个 Cache 块对应 1 位：</p>
+<ul>
+<li>脏位 = 0：Cache 块数据与主存一致，未被修改。</li>
+<li>脏位 = 1：Cache 块数据被 CPU 修改，与主存不一致（需替换时写回主存）。</li>
+</ul>
+</li>
+<li><p>操作步骤：</p>
+<ol>
+<li>CPU 发出 “写地址 + 写数据”，地址映射机构拆分地址并判断命中：<ul>
+<li>命中：将数据写入 Cache 对应块，脏位设为 1，写操作结束（无需等待主存）。</li>
+<li>未命中：<ul>
+<li>若 Cache 未满：从主存调入对应块到 Cache，将数据写入 Cache 块，脏位设为 1，操作结束。</li>
+<li>若 Cache 已满：替换机构选待替换块，若该块脏位 = 1，先将其写回主存；再调入主存新块，写入数据，脏位设为 1，操作结束。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p><strong>写回法数据流向图</strong></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU（发写地址+写数据）</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">地址映射机构（拆分地址，判断命中）</span><br><span class="line">   |</span><br><span class="line">   |-- 命中 --&gt; Cache（写数据，脏位=1） --&gt; 操作结束</span><br><span class="line">   |</span><br><span class="line">   |-- 未命中 --&gt; Cache未满？</span><br><span class="line">                   |</span><br><span class="line">                   |-- 是 --&gt; 主存读块入Cache --&gt; 写数据（脏位=1）--&gt; 结束</span><br><span class="line">                   |</span><br><span class="line">                   |-- 否 --&gt; 替换机构选块</span><br><span class="line">                               |</span><br><span class="line">                               |-- 脏位=1 --&gt; 先写回主存 --&gt; 读新块入Cache --&gt; 写数据（脏位=1）--&gt; 结束</span><br><span class="line">                               |</span><br><span class="line">                               |-- 脏位=0 --&gt; 直接读新块入Cache --&gt; 写数据（脏位=1）--&gt; 结束</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><p>优缺点：</p>
+<ul>
+<li>优点：写操作速度快（仅访问 Cache），减少主存写次数与总线占用，适合写频繁的场景。</li>
+</ul>
+</li>
+<li><p>缺点：实现复杂，需额外维护脏位；Cache 块替换时可能增加 “写回主存” 的延迟，且断电时需确保 Cache 中脏块数据写入主存（否则数据丢失）。</p>
+</li>
+</ul>
+<h4 id="4-2-3-两种写策略的对比（表格化更清晰）"><a href="#4-2-3-两种写策略的对比（表格化更清晰）" class="headerlink" title="4.2.3 两种写策略的对比（表格化更清晰）"></a>4.2.3 两种写策略的对比（表格化更清晰）</h4><table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>写直达法（Write-Through）</th>
+<th>写回法（Write-Back）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据一致性</td>
+<td>实时一致（Cache 与主存同步）</td>
+<td>延迟一致（替换时同步）</td>
+</tr>
+<tr>
+<td>写操作速度</td>
+<td>慢（依赖主存速度）</td>
+<td>快（仅依赖 Cache 速度）</td>
+</tr>
+<tr>
+<td>硬件复杂度</td>
+<td>低（无需脏位）</td>
+<td>高（需脏位 + 替换时写回逻辑）</td>
+</tr>
+<tr>
+<td>总线带宽占用</td>
+<td>高（频繁写主存）</td>
+<td>低（仅替换时写主存）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>对数据一致性要求高、写频率低的场景</td>
+<td>写频率高、追求速度的场景（如 CPU 核心）</td>
+</tr>
+</tbody></table>
+<h2 id="五、Cache-的改进方向（从-“能用”-到-“好用”）"><a href="#五、Cache-的改进方向（从-“能用”-到-“好用”）" class="headerlink" title="五、Cache 的改进方向（从 “能用” 到 “好用”）"></a>五、Cache 的改进方向（从 “能用” 到 “好用”）</h2><p>早期 Cache 仅为 “单级、统一缓存”，随着 CPU 速度不断提升，为进一步缩小 “CPU - 主存” 速度差，行业从 “级数、功能拆分、映射优化” 三个方向对 Cache 进行改进，现代计算机的 Cache 系统已形成成熟的多级分立架构。</p>
+<h3 id="5-1-增加-Cache-级数（多级-Cache-架构）"><a href="#5-1-增加-Cache-级数（多级-Cache-架构）" class="headerlink" title="5.1 增加 Cache 级数（多级 Cache 架构）"></a>5.1 增加 Cache 级数（多级 Cache 架构）</h3><ul>
+<li><p><strong>问题背景</strong>：单级 Cache 若追求速度，容量需小（如 16KB），命中率低；若追求容量，速度需慢（如 1MB），无法匹配 CPU 的 GHz 级速度。多级 Cache 通过 “速度梯度” 平衡两者。</p>
+</li>
+<li><p><strong>架构设计</strong>：从 CPU 到主存，Cache 分为 L1（一级）、L2（二级）、L3（三级），级数越多，容量越大、速度越慢，与主存衔接更平滑。</p>
+</li>
+<li><p>现代 CPU 典型架构：以 Intel i7-13700K 为例，其 Cache 架构如下：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU核心（8个性能核+8个能效核）</span><br><span class="line">   |</span><br><span class="line">   |-- 每个性能核：L1 Cache（32KB指令Cache + 32KB数据Cache，速度~1ns）</span><br><span class="line">   |</span><br><span class="line">   |-- 每个性能核：L2 Cache（1MB，速度~3ns）</span><br><span class="line">   |</span><br><span class="line">   +-- 所有核心共享：L3 Cache（30MB，速度~10ns）</span><br><span class="line">        |</span><br><span class="line">        v</span><br><span class="line">      主存（DDR5，速度~80ns）</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>多级 Cache 的协作逻辑：</p>
+<ul>
+<li>CPU 访问数据时，优先查 L1 Cache，命中则直接使用；未命中则查 L2 Cache，以此类推。</li>
+<li>数据调入规则：L1 未命中时，从 L2 调数据；L2 未命中时，从 L3 调数据；L3 未命中时，才从主存调数据，且数据会按 “L3→L2→L1” 的顺序逐级缓存（称为 “包含性原则”）。</li>
+<li>优势：L1 保证 “极速响应”，L3 保证 “高命中率”，多级配合使平均访问时间大幅降低。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-2-分立缓存（指令-Cache-与数据-Cache-拆分）"><a href="#5-2-分立缓存（指令-Cache-与数据-Cache-拆分）" class="headerlink" title="5.2 分立缓存（指令 Cache 与数据 Cache 拆分）"></a>5.2 分立缓存（指令 Cache 与数据 Cache 拆分）</h3><ul>
+<li><p><strong>问题背景</strong>：早期统一缓存（指令与数据共存）存在 “访问冲突”——CPU 在同一周期内可能同时 “取指令”（读指令）和 “取数据”（读 / 写数据），若两者在同一 Cache 中，会争夺 Cache 端口，导致延迟。</p>
+</li>
+<li><p><strong>改进方案</strong>：将 Cache 拆分为<strong>指令 Cache（I-Cache）</strong> 和<strong>数据 Cache（D-Cache）</strong>，两者独立工作，分别存储指令和数据。</p>
+</li>
+<li><p>典型案例：</p>
+<ul>
+<li>Intel 80486：首次在 CPU 内集成 8KB 统一 Cache；</li>
+<li>Pentium（80586）：改为 “8KB I-Cache + 8KB D-Cache”，支持 “同时取指和取数”，流水线效率提升 30% 以上；</li>
+<li>现代 CPU：L1 Cache 均为分立设计（如 i7 的 32KB I-Cache + 32KB D-Cache），L2、L3 仍为统一缓存（因 L2、L3 访问频率低于 L1，冲突影响小）。</li>
+</ul>
+</li>
+<li><p><strong>分立缓存优势图</strong>：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU流水线（取指阶段 + 执行阶段）</span><br><span class="line">   |                |</span><br><span class="line">   v                v</span><br><span class="line">I-Cache（存指令）  D-Cache（存数据）</span><br><span class="line">   |                |</span><br><span class="line">   v                v</span><br><span class="line">主存（指令区）    主存（数据区）</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>核心优势：解决 “取指 - 取数” 冲突，支持 CPU 流水线的并行操作，提升指令执行效率。</li>
+</ul>
+<h3 id="5-3-映射与替换算法优化（提升命中率）"><a href="#5-3-映射与替换算法优化（提升命中率）" class="headerlink" title="5.3 映射与替换算法优化（提升命中率）"></a>5.3 映射与替换算法优化（提升命中率）</h3><ul>
+<li><strong>映射算法优化</strong>：从 “直接映射”（简单但冲突高）→“组相联映射”（折中）→“自适应组相联”（动态调整组内块数）。例如，ARM Cortex-A78 的 L2 Cache 支持 “2 路 / 4 路 / 8 路自适应组相联”，可根据程序局部性动态调整，命中率比固定 4 路提升 5%~8%。</li>
+<li><strong>替换算法优化</strong>：从 “FIFO”（简单但不考虑访问频率）→“LRU”（考虑时间局部性）→“伪 LRU”（Pseudo-LRU，简化硬件实现的 LRU 变体）。例如，4 路组相联 Cache 中，伪 LRU 通过 3 位状态位记录块的访问顺序，硬件复杂度仅为真 LRU 的 1/4，命中率接近真 LRU（差距 &lt; 2%），成为现代 Cache 的主流选择。</li>
+</ul>
+<h2 id="六、Cache-主存的地址映射（核心是-“主存块如何找-Cache-块）"><a href="#六、Cache-主存的地址映射（核心是-“主存块如何找-Cache-块）" class="headerlink" title="六、Cache - 主存的地址映射（核心是 “主存块如何找 Cache 块）"></a>六、Cache - 主存的地址映射（核心是 “主存块如何找 Cache 块）</h2><p>地址映射是 Cache 的 “导航系统”，决定了主存中的每一块该存到 Cache 的哪个位置，直接影响 Cache 的命中率和硬件实现复杂度。主流映射方式分为三类：直接映射、全相联映射、组相联映射，三者在 “灵活性 - 复杂度” 上呈梯度分布。</p>
+<h3 id="6-1-直接映射（Direct-Mapping）：最简单的-“固定分配”"><a href="#6-1-直接映射（Direct-Mapping）：最简单的-“固定分配”" class="headerlink" title="6.1 直接映射（Direct Mapping）：最简单的 “固定分配”"></a>6.1 直接映射（Direct Mapping）：最简单的 “固定分配”</h3><h4 id="6-1-1-核心原理"><a href="#6-1-1-核心原理" class="headerlink" title="6.1.1 核心原理"></a>6.1.1 核心原理</h4><p>主存块与 Cache 块的映射关系是<strong>固定的</strong>：每个主存块只能映射到 Cache 中唯一的一块，映射公式为：(\text{Cache块号} = \text{主存块号} \mod \text{Cache总块数})例如，若 Cache 有 64 块（编号 0~63），则主存块 0→Cache 块 0、主存块 64→Cache 块 0、主存块 128→Cache 块 0，以此类推（这些主存块共享 Cache 块 0，易发生冲突）。</p>
+<h4 id="6-1-2-地址结构拆分"><a href="#6-1-2-地址结构拆分" class="headerlink" title="6.1.2 地址结构拆分"></a>6.1.2 地址结构拆分</h4><p>假设主存容量为2<sup>m</sup>字，Cache 容量为2<sup>c</sup>字，块长为2<sup>b</sup>字（每块含2<sup>b</sup>字），则主存地址和 Cache 地址的拆分如下：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">主存地址（共m位）：</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">| 主存字块标记（t位） | Cache字块地址（c位） | 字块内地址（b位） |</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">  t = m - c - b          对应Cache块号        块内具体字的位置</span><br><span class="line"></span><br><span class="line">Cache地址（共c+b位）：</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">| Cache字块地址（c位） | 字块内地址（b位） |</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">  与主存地址的对应字段完全一致</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-1-3-命中判断流程"><a href="#6-1-3-命中判断流程" class="headerlink" title="6.1.3 命中判断流程"></a>6.1.3 命中判断流程</h4><figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU发主存地址</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">拆分地址：Tag（t位） + Cache块地址（c位） + 块内地址（b位）</span><br><span class="line">   |</span><br><span class="line">   |-- 按Cache块地址找Cache中的目标块</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">提取目标块的Tag与Valid位</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">比较器：主存Tag vs Cache块Tag？且Valid位=1？</span><br><span class="line">   |</span><br><span class="line">   |-- 是 → 命中，用块内地址取数据</span><br><span class="line">   |</span><br><span class="line">   |-- 否 → 未命中，调入主存块到目标块</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-1-4-优缺点"><a href="#6-1-4-优缺点" class="headerlink" title="6.1.4 优缺点"></a>6.1.4 优缺点</h4><ul>
+<li><strong>优点</strong>：硬件实现简单（无需复杂的比较逻辑，只需 1 个比较器），成本低，访问速度快。</li>
+<li><strong>缺点</strong>：块冲突概率高（多个主存块共享同一 Cache 块），命中率低。例如，若程序频繁访问主存块 0 和 64，会反复替换 Cache 块 0，导致 “抖动”（命中率骤降）。</li>
+<li><strong>适用场景</strong>：容量较小的 Cache（如早期 L1 Cache），或对成本敏感的嵌入式系统。</li>
+</ul>
+<h3 id="6-2-全相联映射（Fully-Associative-Mapping）：最灵活的-“自由分配”"><a href="#6-2-全相联映射（Fully-Associative-Mapping）：最灵活的-“自由分配”" class="headerlink" title="6.2 全相联映射（Fully Associative Mapping）：最灵活的 “自由分配”"></a>6.2 全相联映射（Fully Associative Mapping）：最灵活的 “自由分配”</h3><h4 id="6-2-1-核心原理"><a href="#6-2-1-核心原理" class="headerlink" title="6.2.1 核心原理"></a>6.2.1 核心原理</h4><p>主存中的<strong>任意一块可映射到 Cache 中的任意一块</strong>，无固定对应关系。例如，Cache 有 64 块，主存块 0 可存到 Cache 块 0~63 中的任意一块，主存块 64 也可存到任意一块，完全消除了 “固定冲突”。</p>
+<h4 id="6-2-2-地址结构拆分"><a href="#6-2-2-地址结构拆分" class="headerlink" title="6.2.2 地址结构拆分"></a>6.2.2 地址结构拆分</h4><p>由于主存块可存到任意 Cache 块，地址中无需 “Cache 块地址” 字段，仅需 “Tag + 块内地址”：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">主存地址（共m位）：</span><br><span class="line">+-----------------------+-------------------+</span><br><span class="line">| 主存字块标记（t+c位） | 字块内地址（b位） |</span><br><span class="line">+-----------------------+-------------------+</span><br><span class="line">  t+c = m - b（需标记完整的主存块号）</span><br><span class="line"></span><br><span class="line">Cache地址（共c+b位）：</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">| Cache字块地址（c位） | 字块内地址（b位） |</span><br><span class="line">+-------------------+-------------------+</span><br><span class="line">  Cache块地址由替换算法动态分配</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-2-3-命中判断流程"><a href="#6-2-3-命中判断流程" class="headerlink" title="6.2.3 命中判断流程"></a>6.2.3 命中判断流程</h4><figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU发主存地址</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">拆分地址：Tag（t+c位） + 块内地址（b位）</span><br><span class="line">   |</span><br><span class="line">   |-- 提取Cache中所有块的Tag与Valid位</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">比较器（多个并行）：主存Tag vs 所有Cache块Tag？且Valid位=1？</span><br><span class="line">   |</span><br><span class="line">   |-- 有匹配 → 命中，用对应Cache块的块内地址取数据</span><br><span class="line">   |</span><br><span class="line">   |-- 无匹配 → 未命中，替换算法选一块，调入主存块</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-2-4-优缺点"><a href="#6-2-4-优缺点" class="headerlink" title="6.2.4 优缺点"></a>6.2.4 优缺点</h4><ul>
+<li><strong>优点</strong>：块冲突概率极低（几乎为 0），命中率最高，能最大程度利用程序局部性。</li>
+<li><strong>缺点</strong>：硬件复杂度极高（需2<sup>c</sup>个比较器并行工作，若 Cache 有 1024 块，需 1024 个比较器），成本高，访问速度慢（比较器数量多导致延迟增加）。</li>
+<li><strong>适用场景</strong>：容量极小的 Cache（如 CPU 内的 “TLB 缓存”，通常仅 32~128 项），或对命中率要求极高的特殊场景。</li>
+</ul>
+<h3 id="6-3-组相联映射（Set-Associative-Mapping）：折中最优的-“分组自由分配”"><a href="#6-3-组相联映射（Set-Associative-Mapping）：折中最优的-“分组自由分配”" class="headerlink" title="6.3 组相联映射（Set-Associative Mapping）：折中最优的 “分组自由分配”"></a>6.3 组相联映射（Set-Associative Mapping）：折中最优的 “分组自由分配”</h3><p>组相联映射结合了直接映射的 “简单” 和全相联映射的 “灵活”，是现代计算机的主流选择。</p>
+<h4 id="6-3-1-核心原理"><a href="#6-3-1-核心原理" class="headerlink" title="6.3.1 核心原理"></a>6.3.1 核心原理</h4><ol>
+<li><strong>分组</strong>：将 Cache 分为Q个 “组”（Set），每组含r个 “块”（Block），即Cache总块数 = Q x r，r称为 “相联度”（如(r=2)为 2 路组相联，(r=4)为 4 路组相联）。</li>
+<li><strong>组间直接映射</strong>：主存块按公式映射到唯一的组 Cache组号 = 主存块号 mod Q</li>
+<li><strong>组内全相联映射</strong>：主存块可存到该组内的任意一块。</li>
+</ol>
+<p>例如，Cache 有 64 块，分为 32 组（Q=32），每组 2 块（r=2，2 路组相联）：</p>
+<ul>
+<li>主存块 0→Cache 组 0（可存到组 0 的块 0 或块 1）</li>
+<li>主存块 32→Cache 组 0（可存到组 0 的块 0 或块 1）</li>
+<li>主存块 1→Cache 组 1（可存到组 1 的块 2 或块 3）</li>
+<li>以此类推，组间无冲突，组内仅 2 块竞争，冲突概率远低于直接映射。</li>
+</ul>
+<h4 id="6-3-2-地址结构拆分"><a href="#6-3-2-地址结构拆分" class="headerlink" title="6.3.2 地址结构拆分"></a>6.3.2 地址结构拆分</h4><p>延续之前的地址参数（主存2<sup>m</sup>字，Cache2<sup>c</sup>字，块长2<sup>b</sup>字），组相联映射的地址拆分为：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">主存地址（共m位）：</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">| 主存字块标记（s位） | Cache组地址（q位） | 字块内地址（b位） |</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">  s = m - q - b          q = log2(Q) = c - log2(r)        与前两种一致</span><br><span class="line"></span><br><span class="line">Cache地址（共c+b位）：</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">| 组内块地址（r位） | Cache组地址（q位） | 字块内地址（b位） |</span><br><span class="line">+-------------------+-------------------+-------------------+</span><br><span class="line">  r = log2(r)（组内块的编号）</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-3-3-命中判断流程（以-4-路组相联为例）"><a href="#6-3-3-命中判断流程（以-4-路组相联为例）" class="headerlink" title="6.3.3 命中判断流程（以 4 路组相联为例）"></a>6.3.3 命中判断流程（以 4 路组相联为例）</h4><figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">CPU发主存地址</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">拆分地址：Tag（s位） + 组地址（q位） + 块内地址（b位）</span><br><span class="line">   |</span><br><span class="line">   |-- 按组地址找Cache中的目标组（含4个块）</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">提取目标组内4个块的Tag与Valid位</span><br><span class="line">   |</span><br><span class="line">   v</span><br><span class="line">4个并行比较器：主存Tag vs 组内4个块的Tag？且Valid位=1？</span><br><span class="line">   |</span><br><span class="line">   |-- 有匹配 → 命中，用块内地址取对应块的数据</span><br><span class="line">   |</span><br><span class="line">   |-- 无匹配 → 未命中，替换算法在组内选一块（脏块先写回），调入主存块</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="6-3-4-优缺点与相联度选择"><a href="#6-3-4-优缺点与相联度选择" class="headerlink" title="6.3.4 优缺点与相联度选择"></a>6.3.4 优缺点与相联度选择</h4><ul>
+<li><p>优点：</p>
+<ol>
+<li>块冲突概率低（组内多块可选），命中率接近全相联映射。</li>
+<li>硬件复杂度低（仅需r个比较器，如 4 路组相联仅需 4 个），成本可控。</li>
+</ol>
+</li>
+<li><p><strong>缺点</strong>：相联度r越大，比较器数量越多，硬件延迟略有增加。</p>
+</li>
+<li><p>相联度选择原则：</p>
+<ul>
+<li>L1 Cache：常用 2 路或 4 路组相联（平衡速度与命中率，如 i7 的 L1 Cache 为 8 路组相联）。</li>
+</ul>
+</li>
+<li><p>L2/L3 Cache：常用 4 路、8 路或 16 路组相联（容量大，可容忍稍高的硬件延迟，如 i7 的 L2 Cache 为 4 路，L3 Cache 为 16 路）。</p>
+</li>
+</ul>
+<h3 id="6-4-三种映射方式对比（表格化总结）"><a href="#6-4-三种映射方式对比（表格化总结）" class="headerlink" title="6.4 三种映射方式对比（表格化总结）"></a>6.4 三种映射方式对比（表格化总结）</h3><table>
+<thead>
+<tr>
+<th>映射方式</th>
+<th>映射规则</th>
+<th>比较器数量</th>
+<th>块冲突概率</th>
+<th>硬件复杂度</th>
+<th>命中率</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接映射</td>
+<td>主存块→唯一 Cache 块</td>
+<td>1 个</td>
+<td>最高</td>
+<td>最低</td>
+<td>最低</td>
+<td>小容量 Cache（如早期 L1）</td>
+</tr>
+<tr>
+<td>全相联映射</td>
+<td>主存块→任意 Cache 块</td>
+<td>2<sup>c</sup>个</td>
+<td>最低</td>
+<td>最高</td>
+<td>最高</td>
+<td>极小容量 Cache（如 TLB）</td>
+</tr>
+<tr>
+<td>组相联映射</td>
+<td>主存块→唯一组 + 组内任意块</td>
+<td>r个</td>
+<td>中等</td>
+<td>中等</td>
+<td>中等</td>
+<td>现代 L1/L2/L3 Cache</td>
+</tr>
+</tbody></table>
+<h2 id="七、替换算法：Cache-满时-“该丢哪块”"><a href="#七、替换算法：Cache-满时-“该丢哪块”" class="headerlink" title="七、替换算法：Cache 满时 “该丢哪块”"></a>七、替换算法：Cache 满时 “该丢哪块”</h2><p>当 Cache 未命中且 Cache 已满时，需选择一个现有块替换，替换算法的优劣直接影响命中率。理想的替换算法是 “最优替换算法（OPT）”—— 替换未来最久不访问的块，但 OPT 需预知未来访问序列，无法实现，因此实际应用中采用 “近似最优” 的算法。</p>
+<h3 id="7-1-最优替换算法（OPT）：理论标杆"><a href="#7-1-最优替换算法（OPT）：理论标杆" class="headerlink" title="7.1 最优替换算法（OPT）：理论标杆"></a>7.1 最优替换算法（OPT）：理论标杆</h3><h4 id="7-1-1-核心原理"><a href="#7-1-1-核心原理" class="headerlink" title="7.1.1 核心原理"></a>7.1.1 核心原理</h4><p>根据未来的内存访问序列，选择 “未来最久不被访问” 的块替换，能实现理论最高命中率，作为其他算法的对比基准。</p>
+<h4 id="7-1-2-示例"><a href="#7-1-2-示例" class="headerlink" title="7.1.2 示例"></a>7.1.2 示例</h4><p>假设 Cache 有 3 块，当前块为 [A,B,C]，未来访问序列为 [D,A,B,E,A,C]：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">当前Cache：[A,B,C]</span><br><span class="line">未来访问：D → A → B → E → A → C</span><br><span class="line"></span><br><span class="line">替换决策：</span><br><span class="line">- 需调入D，判断A、B、C的未来访问时间：</span><br><span class="line">  - A：下一次访问在“D之后”（第2位）</span><br><span class="line">  - B：下一次访问在“D、A之后”（第3位）</span><br><span class="line">  - C：下一次访问在“D、A、B、E、A之后”（第6位）</span><br><span class="line">- 选择未来最久不访问的C替换，新Cache：[D,A,B]</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="7-1-3-特点"><a href="#7-1-3-特点" class="headerlink" title="7.1.3 特点"></a>7.1.3 特点</h4><ul>
+<li>优点：命中率最高（理论上限）。</li>
+<li>缺点：需预知未来访问序列，无法在硬件中实现，仅用于算法性能评估。</li>
+</ul>
+<h3 id="7-2-先进先出（FIFO）算法：最简单的-“先到先换”"><a href="#7-2-先进先出（FIFO）算法：最简单的-“先到先换”" class="headerlink" title="7.2 先进先出（FIFO）算法：最简单的 “先到先换”"></a>7.2 先进先出（FIFO）算法：最简单的 “先到先换”</h3><h4 id="7-2-1-核心原理"><a href="#7-2-1-核心原理" class="headerlink" title="7.2.1 核心原理"></a>7.2.1 核心原理</h4><p>按块进入 Cache 的先后顺序替换，先进入的块先被替换，无需记录访问频率或时间，仅需一个 “队列” 记录块的进入顺序。</p>
+<h4 id="7-2-2-示例"><a href="#7-2-2-示例" class="headerlink" title="7.2.2 示例"></a>7.2.2 示例</h4><p>Cache 有 3 块，访问序列为 [A,B,C,A,B,D,A,E]：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">访问A：Cache空，调入A → [A(队首), _, _]</span><br><span class="line">访问B：调入B → [A, B, _]</span><br><span class="line">访问C：调入C → [A, B, C(队尾)]</span><br><span class="line">访问A：命中，队列不变 → [A, B, C]</span><br><span class="line">访问B：命中，队列不变 → [A, B, C]</span><br><span class="line">访问D：Cache满，替换队首A → [B, C, D(新队尾)]</span><br><span class="line">访问A：调入A，替换队首B → [C, D, A(新队尾)]</span><br><span class="line">访问E：调入E，替换队首C → [D, A, E(新队尾)]</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="7-2-3-优缺点"><a href="#7-2-3-优缺点" class="headerlink" title="7.2.3 优缺点"></a>7.2.3 优缺点</h4><ul>
+<li><strong>优点</strong>：实现简单（用移位寄存器或链表记录队列），硬件成本低。</li>
+<li><strong>缺点</strong>：未利用程序的局部性，可能替换 “未来仍会访问的热点块”（如循环中的块），命中率低于 LRU。</li>
+<li><strong>适用场景</strong>：对命中率要求不高、硬件资源受限的嵌入式系统。</li>
+</ul>
+<h3 id="7-3-近期最少使用（LRU）算法：最接近最优的-“近期不访问则未来也不访问”"><a href="#7-3-近期最少使用（LRU）算法：最接近最优的-“近期不访问则未来也不访问”" class="headerlink" title="7.3 近期最少使用（LRU）算法：最接近最优的 “近期不访问则未来也不访问”"></a>7.3 近期最少使用（LRU）算法：最接近最优的 “近期不访问则未来也不访问”</h3><h4 id="7-3-1-核心原理"><a href="#7-3-1-核心原理" class="headerlink" title="7.3.1 核心原理"></a>7.3.1 核心原理</h4><p>基于 “时间局部性” 假设：近期最久未访问的块，未来也最可能不访问。需记录每个块的 “最近访问时间”，替换时选择时间最早的块。</p>
+<h4 id="7-3-2-实现方式（硬件）"><a href="#7-3-2-实现方式（硬件）" class="headerlink" title="7.3.2 实现方式（硬件）"></a>7.3.2 实现方式（硬件）</h4><ul>
+<li><strong>链表法</strong>：将 Cache 块按访问时间排序，最近访问的块放在表头，最久未访问的放在表尾；访问块时，将其移到表头；替换时，删除表尾块。</li>
+<li><strong>计数器法</strong>：每个块配一个计数器，访问块时计数器清零，其他块计数器加 1；替换时，选择计数器值最大的块（最久未访问）。</li>
+</ul>
+<h4 id="7-3-3-示例（链表法）"><a href="#7-3-3-示例（链表法）" class="headerlink" title="7.3.3 示例（链表法）"></a>7.3.3 示例（链表法）</h4><p>Cache 有 3 块，访问序列为 [A,B,C,A,B,D,A,E]：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">访问A：链表[A] → [A(表头)]</span><br><span class="line">访问B：链表[A,B] → [B(表头), A]</span><br><span class="line">访问C：链表[B,A,C] → [C(表头), B, A(表尾)]</span><br><span class="line">访问A：移A到表头 → [A(表头), C, B(表尾)]</span><br><span class="line">访问B：移B到表头 → [B(表头), A, C(表尾)]</span><br><span class="line">访问D：替换表尾C → [D(表头), B, A]</span><br><span class="line">访问A：移A到表头 → [A(表头), D, B(表尾)]</span><br><span class="line">访问E：替换表尾B → [E(表头), A, D]</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="7-3-4-优缺点"><a href="#7-3-4-优缺点" class="headerlink" title="7.3.4 优缺点"></a>7.3.4 优缺点</h4><ul>
+<li><strong>优点</strong>：命中率接近 OPT，能有效利用时间局部性，是实际应用中性能最优的可实现算法。</li>
+<li><strong>缺点</strong>：硬件实现复杂（链表需频繁移动节点，计数器需同步更新），尤其当 Cache 块数或相联度大时，延迟增加。</li>
+</ul>
+<h3 id="7-4-伪-LRU（Pseudo-LRU）算法：平衡性能与复杂度"><a href="#7-4-伪-LRU（Pseudo-LRU）算法：平衡性能与复杂度" class="headerlink" title="7.4 伪 LRU（Pseudo-LRU）算法：平衡性能与复杂度"></a>7.4 伪 LRU（Pseudo-LRU）算法：平衡性能与复杂度</h3><h4 id="7-4-1-核心原理"><a href="#7-4-1-核心原理" class="headerlink" title="7.4.1 核心原理"></a>7.4.1 核心原理</h4><p>LRU 的简化版本，用 “树形决策” 记录块的访问状态，无需完整记录访问时间，硬件实现简单，命中率接近 LRU（差距 &lt; 2%）。</p>
+<h4 id="7-4-2-实现示例（4-路组相联）"><a href="#7-4-2-实现示例（4-路组相联）" class="headerlink" title="7.4.2 实现示例（4 路组相联）"></a>7.4.2 实现示例（4 路组相联）</h4><p>4 路组相联的 Cache 组含 4 个块（B0、B1、B2、B3），用 2 位状态位（S1、S0）记录访问状态，形成二叉树：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">    根节点S1</span><br><span class="line">   /        \</span><br><span class="line">  S0         S0（未用）</span><br><span class="line"> /  \</span><br><span class="line">B0   B1      B2   B3</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>状态位规则：S1=0 表示最近访问的块在左子树（B0/B1），S1=1 表示在右子树（B2/B3）；S0=0 表示最近访问的块在 B0，S0=1 表示在 B1。</li>
+<li>替换规则：根据状态位，选择 “与最近访问路径相反” 的块。例如，S1=0、S0=0（最近访问 B0），则替换 B3（右子树最远端）。</li>
+</ul>
+<h4 id="7-4-3-优缺点"><a href="#7-4-3-优缺点" class="headerlink" title="7.4.3 优缺点"></a>7.4.3 优缺点</h4><ul>
+<li><strong>优点</strong>：硬件实现简单（仅需(r-1)位状态位，4 路组相联仅需 2 位），速度快，命中率接近 LRU。</li>
+<li><strong>缺点</strong>：命中率略低于真 LRU。</li>
+<li><strong>适用场景</strong>：现代中高相联度 Cache（如 4 路、8 路组相联的 L2 / L3 Cache），是当前行业主流选择，如 Intel 酷睿系列、ARM Cortex-A 系列均采用伪 LRU 算法。</li>
+</ul>
+<h3 id="7-5-随机（Random）算法：最-“佛系”-的替换"><a href="#7-5-随机（Random）算法：最-“佛系”-的替换" class="headerlink" title="7.5 随机（Random）算法：最 “佛系” 的替换"></a>7.5 随机（Random）算法：最 “佛系” 的替换</h3><h4 id="7-5-1-核心原理"><a href="#7-5-1-核心原理" class="headerlink" title="7.5.1 核心原理"></a>7.5.1 核心原理</h4><p>随机选择一个 Cache 块进行替换，无需记录任何访问信息，仅通过硬件随机数生成器实现。</p>
+<h4 id="7-5-2-示例"><a href="#7-5-2-示例" class="headerlink" title="7.5.2 示例"></a>7.5.2 示例</h4><p>Cache 有 3 块，当前块为 [A,B,C]，需调入 D 时：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">当前Cache：[A,B,C]</span><br><span class="line">随机选择：生成随机数2（对应块C）</span><br><span class="line">替换后：[A,B,D]</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="7-5-3-优缺点"><a href="#7-5-3-优缺点" class="headerlink" title="7.5.3 优缺点"></a>7.5.3 优缺点</h4><ul>
+<li><strong>优点</strong>：硬件实现最简单（无状态记录、无比较逻辑），速度快。</li>
+<li><strong>缺点</strong>：未利用任何局部性，命中率低于 FIFO 和 LRU，仅在 Cache 容量大、块冲突概率低时可用。</li>
+<li><strong>适用场景</strong>：容量极大的 L3 Cache（如 64MB L3），或对硬件成本极端敏感的低端芯片。</li>
+</ul>
+<h3 id="7-6-四种替换算法性能对比（表格化）"><a href="#7-6-四种替换算法性能对比（表格化）" class="headerlink" title="7.6 四种替换算法性能对比（表格化）"></a>7.6 四种替换算法性能对比（表格化）</h3><table>
+<thead>
+<tr>
+<th>替换算法</th>
+<th>核心逻辑</th>
+<th>硬件复杂度</th>
+<th>命中率（与 OPT 对比）</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最优（OPT）</td>
+<td>替换未来最久不访问的块</td>
+<td>不可实现</td>
+<td>100%（理论上限）</td>
+<td>算法性能评估基准</td>
+</tr>
+<tr>
+<td>先进先出（FIFO）</td>
+<td>替换最早进入的块</td>
+<td>低</td>
+<td>约 70%~80%</td>
+<td>嵌入式系统、小容量 Cache</td>
+</tr>
+<tr>
+<td>近期最少使用（LRU）</td>
+<td>替换近期最久未访问的块</td>
+<td>高</td>
+<td>约 90%~95%</td>
+<td>对命中率要求高的中容量 Cache</td>
+</tr>
+<tr>
+<td>伪 LRU</td>
+<td>树形决策简化 LRU</td>
+<td>中</td>
+<td>约 88%~93%</td>
+<td>现代 L2/L3 Cache（主流选择）</td>
+</tr>
+<tr>
+<td>随机（Random）</td>
+<td>随机选择替换块</td>
+<td>极低</td>
+<td>约 60%~70%</td>
+<td>大容量 L3 Cache、低端芯片</td>
+</tr>
+</tbody></table>
+<h2 id="八、Cache-的性能分析与优化实践"><a href="#八、Cache-的性能分析与优化实践" class="headerlink" title="八、Cache 的性能分析与优化实践"></a>八、Cache 的性能分析与优化实践</h2><p>Cache 的最终价值是提升系统性能，需通过量化指标评估性能，并结合实际场景优化设计。本节将从 “性能指标计算”“典型场景优化”“常见问题排查” 三个维度展开，兼顾理论与实践。</p>
+<h3 id="8-1-核心性能指标与计算"><a href="#8-1-核心性能指标与计算" class="headerlink" title="8.1 核心性能指标与计算"></a>8.1 核心性能指标与计算</h3><h4 id="8-1-1-命中率（h）与未命中率（1-h）"><a href="#8-1-1-命中率（h）与未命中率（1-h）" class="headerlink" title="8.1.1 命中率（h）与未命中率（1-h）"></a>8.1.1 命中率（h）与未命中率（1-h）</h4><ul>
+<li><p>计算公式：</p>
+<p>h = N<sub>hit</sub> / (N<sub>hit</sub> + N<sub>miss</sub>)</p>
+<p>其中，N<sub>hit</sub>为 Cache 命中次数，N<sub>miss</sub>为未命中次数。</p>
+</li>
+<li><p><strong>示例</strong>：CPU 访问内存 1000 次，其中 950 次命中 Cache，50 次未命中，则命中率 h = 950 / (950+50) = 95%，未命中率1-h = 5%</p>
+</li>
+<li><p><strong>影响因素</strong>：Cache 容量、块长、映射方式、替换算法、程序局部性。</p>
+</li>
+</ul>
+<h4 id="8-1-2-平均访问时间（tavg）"><a href="#8-1-2-平均访问时间（tavg）" class="headerlink" title="8.1.2 平均访问时间（tavg）"></a>8.1.2 平均访问时间（t<sub>avg</sub>）</h4><ul>
+<li><p><strong>定义</strong>：CPU 访问内存的平均时间，综合了 Cache 命中时间和主存访问时间。</p>
+</li>
+<li><p>计算公式：t<sub>avg</sub> = h x t<sub>c</sub> + (1-h) x (t<sub>c</sub> + t<sub>m</sub>)</p>
+<p>(注：未命中时，需先访问主存（t<sub>m</sub>）再访问 Cache（t<sub>c</sub>），故未命中时间为 t<sub>c</sub> + t<sub>m</sub>；部分场景简化为 h × t<sub>c</sub> + (1-h) × t<sub>m</sub>，需根据实际访问流程调整）</p>
+<p>示例：设 t<sub>c</sub> = 2ns，t<sub>m</sub> = 100ns，h = 95%，则：t<sub>avg</sub> = 0.95 × 2 + 0.05 × (2+100) = 1.9 + 5.1 = 7ns</p>
+<p>若无 Cache，平均访问时间为 100ns，性能提升约 14 倍。</p>
+</li>
+</ul>
+<h4 id="8-1-3-加速比（S）"><a href="#8-1-3-加速比（S）" class="headerlink" title="8.1.3 加速比（S）"></a>8.1.3 加速比（S）</h4><ul>
+<li><strong>定义</strong>：无 Cache 时的平均访问时间与有 Cache 时的平均访问时间的比值，反映 Cache 对性能的提升幅度。</li>
+<li><strong>计算公式</strong>：S = t<sub>m</sub>/t<sub>avg</sub><ul>
+<li><strong>示例</strong>：无 Cache 时 t<sub>m</sub> = 100ns，有 Cache 时 t<sub>avg</sub> = 7ns，则加速比 S = 100/7 ≈ 14.3。</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-2-典型场景优化策略"><a href="#8-2-典型场景优化策略" class="headerlink" title="8.2 典型场景优化策略"></a>8.2 典型场景优化策略</h3><h4 id="8-2-1-针对-“循环程序”-的优化"><a href="#8-2-1-针对-“循环程序”-的优化" class="headerlink" title="8.2.1 针对 “循环程序” 的优化"></a>8.2.1 针对 “循环程序” 的优化</h4><p>循环程序具有极强的时间局部性（指令重复执行）和空间局部性（数据连续访问），优化方向如下：</p>
+<ol>
+<li><p><strong>块长调整</strong>：将块长设为循环体指令长度的整数倍，例如循环体含 8 条指令，块长设为 8 字（32 字节，假设 1 字 4 字节），确保一次调入完整循环体，减少未命中。</p>
+</li>
+<li><p>数据对齐：将循环中访问的数组按 Cache 块边界对齐（如 32 字节对齐），避免 “跨块访问”（一个数据分布在两个 Cache 块中，需两次访问）。</p>
+<ul>
+<li>反例：数组起始地址为 30 字节，块长 32 字节，第一个数据跨 “块 0（0-31 字节）” 和 “块 1（32-63 字节）”，访问时需两次 Cache 操作。</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>正例：数组起始地址设为 32 字节，数据完全落在块 1 中，一次访问即可命中。</li>
+</ul>
+<h4 id="8-2-2-针对-“多核心共享-Cache”-的优化（如-L3-Cache）"><a href="#8-2-2-针对-“多核心共享-Cache”-的优化（如-L3-Cache）" class="headerlink" title="8.2.2 针对 “多核心共享 Cache” 的优化（如 L3 Cache）"></a>8.2.2 针对 “多核心共享 Cache” 的优化（如 L3 Cache）</h4><p>多核心共享 L3 Cache 时，易出现 “Cache 污染”（某核心的频繁访问占用大量 L3 块，导致其他核心命中率下降），优化策略：</p>
+<ol>
+<li><strong>Cache 分区（Cache Partitioning）</strong>：将 L3 Cache 划分为多个独立分区，每个核心分配固定分区，避免核心间的块竞争。例如，4 核心 CPU 将 32MB L3 Cache 分为 4 个 8MB 分区，每个核心独占 8MB。</li>
+<li><strong>优先级调度</strong>：为高优先级任务（如实时任务）分配更多 L3 Cache 空间，低优先级任务分配较少空间，确保关键任务的命中率。</li>
+</ol>
+<h4 id="8-2-3-针对-“嵌入式系统”-的优化（资源受限）"><a href="#8-2-3-针对-“嵌入式系统”-的优化（资源受限）" class="headerlink" title="8.2.3 针对 “嵌入式系统” 的优化（资源受限）"></a>8.2.3 针对 “嵌入式系统” 的优化（资源受限）</h4><p>嵌入式系统通常硬件资源有限（Cache 容量小、成本敏感），优化方向：</p>
+<ol>
+<li><strong>采用直接映射 + FIFO</strong>：以较低的硬件复杂度实现基础 Cache 功能，例如 8 位 MCU 的 1KB L1 Cache 采用直接映射 + FIFO，成本仅增加 5%。</li>
+<li><strong>软件预取（Software Prefetching）</strong>：通过编译器指令（如<code>__builtin_prefetch</code>）在数据被访问前，主动将其调入 Cache，减少未命中。例如，数组遍历前预取下一个 Cache 块，命中率可提升 10%~15%。</li>
+</ol>
+<h3 id="8-3-Cache-常见问题与排查方法"><a href="#8-3-Cache-常见问题与排查方法" class="headerlink" title="8.3 Cache 常见问题与排查方法"></a>8.3 Cache 常见问题与排查方法</h3><h4 id="8-3-1-问题-1：Cache-抖动（Thrashing）"><a href="#8-3-1-问题-1：Cache-抖动（Thrashing）" class="headerlink" title="8.3.1 问题 1：Cache 抖动（Thrashing）"></a>8.3.1 问题 1：Cache 抖动（Thrashing）</h4><ul>
+<li><p><strong>现象</strong>：命中率骤降（如从 95% 降至 50% 以下），系统性能大幅下降。</p>
+</li>
+<li><p><strong>原因</strong>：多个主存块频繁竞争同一 Cache 块（直接映射中常见），或程序局部性差（如随机访问大数组）。</p>
+</li>
+<li><p>排查与解决：</p>
+<ol>
+<li>用性能分析工具（如 Intel VTune、ARM DS-5）监测 Cache 命中率，确认抖动场景。</li>
+<li>优化映射方式：将直接映射改为 2 路组相联，减少块冲突。</li>
+<li>调整程序逻辑：将随机访问改为连续访问（如优化数组索引顺序），增强局部性。</li>
+</ol>
+</li>
+</ul>
+<h4 id="8-3-2-问题-2：写回法导致的数据丢失"><a href="#8-3-2-问题-2：写回法导致的数据丢失" class="headerlink" title="8.3.2 问题 2：写回法导致的数据丢失"></a>8.3.2 问题 2：写回法导致的数据丢失</h4><ul>
+<li><p><strong>现象</strong>：系统断电或崩溃后，Cache 中未写回主存的脏块数据丢失。</p>
+</li>
+<li><p><strong>原因</strong>：写回法中，脏块仅在替换时写回主存，若未替换时断电，数据未同步到主存。</p>
+</li>
+<li><p>排查与解决：</p>
+<ol>
+<li>启用 “Cache 刷回（Cache Flush）” 机制：在关键数据写入后，通过软件指令（如<code>wbinvd</code>）强制将脏块写回主存。</li>
+</ol>
+</li>
+</ul>
+<ol start="2">
+<li>硬件备份：高端服务器采用 “非易失性 Cache（NVC）”，断电后用备用电源（如超级电容）将脏块数据写入主存。</li>
+</ol>
+<h4 id="8-3-3-问题-3：多核心-Cache-一致性问题"><a href="#8-3-3-问题-3：多核心-Cache-一致性问题" class="headerlink" title="8.3.3 问题 3：多核心 Cache 一致性问题"></a>8.3.3 问题 3：多核心 Cache 一致性问题</h4><ul>
+<li><p><strong>现象</strong>：核心 A 修改了 Cache 中的数据，核心 B 读取同一数据时，得到旧值（不一致）。</p>
+</li>
+<li><p><strong>原因</strong>：多核心共享主存，但各核心有独立 L1/L2 Cache，未同步修改后的数据。</p>
+</li>
+<li><p>排查与解决：</p>
+<ol>
+<li>启用 “Cache 一致性协议”（如 MESI、MOESI 协议）：通过 “ invalidate（失效）”“update（更新）” 机制，确保各核心 Cache 中的数据一致。</li>
+</ol>
+</li>
+</ul>
+<ol start="2">
+<li>示例（MESI 协议）：核心 A 修改数据后，标记该 Cache 块为 “Modified（修改态）”，并向其他核心发送 “invalidate” 信号，核心 B 的该块标记为 “Invalid（无效态）”，核心 B 再次访问时需从核心 A 或主存读取最新数据。</li>
+</ol>
+<h2 id="九、Cache-技术的发展趋势（2024-2030）"><a href="#九、Cache-技术的发展趋势（2024-2030）" class="headerlink" title="九、Cache 技术的发展趋势（2024-2030）"></a>九、Cache 技术的发展趋势（2024-2030）</h2><p>随着 CPU 向 “多核化、高频化” 发展，以及 AI、大数据等场景对内存带宽的需求激增，Cache 技术正朝着 “更大容量、更高带宽、更低延迟、智能管理” 四个方向演进。</p>
+<h3 id="9-1-三维堆叠-Cache（3D-IC-Cache）：突破容量与带宽瓶颈"><a href="#9-1-三维堆叠-Cache（3D-IC-Cache）：突破容量与带宽瓶颈" class="headerlink" title="9.1 三维堆叠 Cache（3D-IC Cache）：突破容量与带宽瓶颈"></a>9.1 三维堆叠 Cache（3D-IC Cache）：突破容量与带宽瓶颈</h3><ul>
+<li><strong>技术原理</strong>：将 Cache 芯片与 CPU 核心通过 “硅通孔（TSV）” 垂直堆叠，替代传统的平面封装，缩短数据传输路径，提升带宽并增大容量。</li>
+<li><strong>当前进展</strong>：Intel 的 “Xeon Max” 处理器集成了 1.12TB 的 HBM2e 内存作为 “L4 Cache”，AMD 的 “EPYC 9004” 系列采用 3D V-Cache 技术，L3 Cache 容量达 768MB，带宽提升 50%。</li>
+<li><strong>未来方向</strong>：2026 年将实现 “CPU 核心 + 3D Cache+HBM” 的一体化堆叠，L4 Cache 容量突破 2TB，访问延迟降至 1ns 以下。</li>
+</ul>
+<h3 id="9-2-智能-Cache-管理（AI-Driven-Cache）：动态适配负载"><a href="#9-2-智能-Cache-管理（AI-Driven-Cache）：动态适配负载" class="headerlink" title="9.2 智能 Cache 管理（AI-Driven Cache）：动态适配负载"></a>9.2 智能 Cache 管理（AI-Driven Cache）：动态适配负载</h3><ul>
+<li><strong>技术原理</strong>：通过 AI 模型（如强化学习）实时分析程序的访问模式，动态调整 Cache 的容量分配、块长、映射方式，实现 “负载自适应优化”。</li>
+<li><strong>应用场景</strong>：AI 训练任务中，模型参数访问具有 “稀疏性”，AI 管理系统可识别稀疏访问区域，为其分配更多 Cache 空间，命中率提升 20%~30%。</li>
+<li><strong>未来方向</strong>：2028 年将实现 “端到端智能 Cache”，无需人工配置，AI 模型自动优化所有参数，适配从游戏、办公到科学计算的各类场景。</li>
+</ul>
+<h3 id="9-3-非易失性-Cache（NVC）：兼顾速度与数据安全"><a href="#9-3-非易失性-Cache（NVC）：兼顾速度与数据安全" class="headerlink" title="9.3 非易失性 Cache（NVC）：兼顾速度与数据安全"></a>9.3 非易失性 Cache（NVC）：兼顾速度与数据安全</h3><ul>
+<li><p><strong>技术原理</strong>：采用非易失性存储介质（如 MRAM、PCM）替代传统 SRAM 作为 Cache，断电后数据不丢失，同时保持接近 SRAM 的速度。</p>
+</li>
+<li><p>优势：</p>
+<ol>
+<li>低功耗：MRAM 的静态功耗仅为 SRAM 的 1/100，适合移动设备。</li>
+<li>高可靠性：断电不丢失数据，避免系统崩溃后的 data loss。</li>
+</ol>
+</li>
+<li><p><strong>未来方向</strong>：2030 年，NVC 将全面替代 SRAM 作为 L2/L3 Cache，L1 Cache 仍采用 SRAM（速度最优），形成 “SRAM L1 + MRAM L2/L3” 的混合架构。</p>
+</li>
+</ul>
+<h3 id="9-4-异构-Cache-架构（Heterogeneous-Cache）：适配异构计算"><a href="#9-4-异构-Cache-架构（Heterogeneous-Cache）：适配异构计算" class="headerlink" title="9.4 异构 Cache 架构（Heterogeneous Cache）：适配异构计算"></a>9.4 异构 Cache 架构（Heterogeneous Cache）：适配异构计算</h3><ul>
+<li><p>技术原理：针对 CPU、GPU、AI 加速器组成的异构计算系统，设计 “共享 + 私有” 混合 Cache 架构：</p>
+<ul>
+<li>私有 Cache：CPU 核心私有 L1/L2 Cache，GPU 核心私有 L1 Cache，确保低延迟。</li>
+<li>共享 Cache：L3/L4 Cache 由所有异构核心共享，支持数据高效互通。</li>
+</ul>
+</li>
+<li><p><strong>应用场景</strong>：AI 推理任务中，GPU 生成的中间结果可直接存入共享 L3 Cache，CPU 无需访问主存即可读取，延迟降低 40%。</p>
+</li>
+<li><p><strong>未来方向</strong>：2027 年将实现 “异构 Cache 一致性协议”，CPU、GPU、AI 加速器的 Cache 数据自动同步，无需软件干预，异构计算效率提升 50%。</p>
+</li>
+</ul>
+<h2 id="十、总结"><a href="#十、总结" class="headerlink" title="十、总结"></a>十、总结</h2><h3 id="10-1-核心价值回顾"><a href="#10-1-核心价值回顾" class="headerlink" title="10.1 核心价值回顾"></a>10.1 核心价值回顾</h3><p>Cache 看似是 “CPU 与主存之间的小缓存”，实则是解决 “速度鸿沟” 的关键技术，其核心价值可概括为三点：</p>
+<ol>
+<li><strong>性能基石</strong>：没有 Cache，CPU 的 GHz 级速度将被主存的百 ns 级延迟 “拖累”，现代计算机的性能将下降 10~100 倍。</li>
+<li><strong>设计哲学</strong>：Cache 的 “局部性利用”“折中优化”（如组相联映射、伪 LRU）是计算机体系结构的核心设计思想，可迁移到内存管理、存储系统等领域。</li>
+<li><strong>技术前沿</strong>：从 3D Cache 到 AI 管理，Cache 技术持续演进，是多核、异构、低功耗计算的关键支撑。</li>
+</ol>
+<h3 id="10-2-学习建议"><a href="#10-2-学习建议" class="headerlink" title="10.2 学习建议"></a>10.2 学习建议</h3><h4 id="10-2-1-从-“原理-实践”-入门"><a href="#10-2-1-从-“原理-实践”-入门" class="headerlink" title="10.2.1 从 “原理 + 实践” 入门"></a>10.2.1 从 “原理 + 实践” 入门</h4><ol>
+<li><strong>掌握基础概念</strong>：先理解 “局部性原理”“命中 / 未命中”“映射方式” 三个核心概念，用简单的图（如本文中的地址拆分图、数据流向图）辅助记忆。</li>
+<li><strong>动手模拟</strong>：用 Python 编写简单的 Cache 模拟器，模拟直接映射 + FIFO 算法，输入访问序列，观察命中率变化，加深对原理的理解。</li>
+<li><strong>参考课程</strong>：系统学习《计算机组成原理》中 Cache 相关章节，结合实验课（如 Cache 性能测试），建立 “理论 - 实践” 的联系。</li>
+</ol>
+<h4 id="10-2-2-进阶者：深入-“优化-前沿”"><a href="#10-2-2-进阶者：深入-“优化-前沿”" class="headerlink" title="10.2.2 进阶者：深入 “优化 + 前沿”"></a>10.2.2 进阶者：深入 “优化 + 前沿”</h4><ol>
+<li><strong>研究经典协议</strong>：深入分析 Cache 一致性协议（MESI、MOESI）、替换算法（伪 LRU 的树形实现），阅读 Intel/ARM 的官方技术手册（如 Intel Volume 3A 中的 Cache 章节）。</li>
+<li><strong>跟踪技术前沿</strong>：关注 IEEE Micro、ACM Transactions on Computer Systems 等期刊，了解 3D Cache、NVC 等新技术的研究进展。</li>
+<li><strong>工程实践</strong>：在 Linux 系统中，通过<code>perf</code>工具监测 Cache 命中率（如<code>perf stat -e cache-references,cache-misses ./program</code>），优化程序的 Cache 友好性（如数据对齐、循环展开）。</li>
+</ol>
+<p>Cache 技术虽已发展数十年，但仍在持续创新，它不仅是计算机体系结构的 “经典课题”，更是应对未来计算挑战的 “关键技术”。无论是初学者还是进阶者，掌握 Cache 的原理与优化方法，都将为深入理解计算机系统打下坚实的基础。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://lvjia.netlify.app">lvting.chi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/">http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://lvjia.netlify.app" target="_blank">Lvjia</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">基础知识</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/6-ji-suan-ji-zu-cheng-yuan-li-shen-ru-xue-xi-cun-chu-xi-tong/" title="6、计算机组成原理: 深入学习存储系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">6、计算机组成原理: 深入学习存储系统</div></div><div class="info-2"><div class="info-item-1">计算机组成原理存储系统全解析一、存储系统基础认知1.1 存储系统的核心地位存储系统是计算机的重要组成部分，它负责数据和程序的存储与访问。从计算机的工作原理来看，CPU 执行指令时，需要从存储器中获取指令和操作数，执行完成后再将结果存储回存储器。一个高效的存储系统，能够极大地提升计算机的整体性能。 1.2 存储系统的层次架构为平衡存储容量、访问速度与成本，现代计算机采用层次化存储结构，从高速到低速、从贵到便宜依次为：  寄存器：位于 CPU 内部，速度极快，但容量极小（通常以字节甚至位计），用于暂存 CPU 正在处理的少量数据。比如 CPU 进行加法运算时，两个操作数会先暂存在寄存器中。 高速缓冲存储器（Cache）：介于 CPU 与主存之间，是高速小容量存储器。它缓解了 CPU 与主存的速度差异。当 CPU 要访问主存数据时，先查 Cache，命中则直接读取；缺失则从主存读，并将数据块调入 Cache，方便后续访问。就像我们常用的工具放在手边抽屉（Cache），不用每次都去仓库（主存）找。 主存储器（内存）：计算机的主要内存，存储当前运行的程序与数据，CPU 可直接访问。它是存储...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/1-ji-suan-ji-zu-cheng-yuan-li-liao-jie-di-ceng-luo-ji/" title="1、计算机组成原理-了解底层逻辑"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-27</div><div class="info-item-2">1、计算机组成原理-了解底层逻辑</div></div><div class="info-2"><div class="info-item-1">1、计算机组成原理-了解底层逻辑一、引言计算机组成原理，作为计算机专业基石课程，搭建起从硬件电路到软件运行的理解桥梁。初次接触其知识体系，恰似打开神秘黑箱，看清内部精密协作的齿轮，知晓程序如何在硬件舞台上 “翩翩起舞”，理解计算机系统如何高效运转。本文从程序执行流程、计算机硬件结构、指令系统、体系结构设计等维度，深入探寻计算机组成原理的奥秘，为后续深入学习筑牢根基。 二、程序执行：指令的 “生命旅程”（一）从高级语言到机器指令当我们在编程时写下z = x + y这样简洁的高级语言表达式，计算机无法直接理解。高级语言需经过编译或解释过程，转化为机器指令序列，这是计算机能识别并执行的 “母语”。机器指令由 0 和 1 组成的二进制代码构成，对应着计算机硬件可直接操作的基本动作。 （二）指令执行的 “三步走”程序执行核心流程可概括为取指令、分析指令（解码）、执行指令，循环往复直至程序结束，时钟信号如同精准的 “节拍器”，驱动每一步有序推进。  取指令：CPU 从存储器中指定位置（由程序计数器 PC 指向）读取指令。比如执行z = x + y，首先要获取LOAD X指令，此时存储器需准确...</div></div></div></a><a class="pagination-related" href="/2-ji-suan-ji-zu-cheng-yuan-li-gai-shu/" title="2、计算机组成原理：概述"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-30</div><div class="info-item-2">2、计算机组成原理：概述</div></div><div class="info-2"><div class="info-item-1">2、计算机组成原理：概述一、引言计算机组成原理是计算机科学与技术领域的核心课程，它搭建起了从硬件底层到软件应用的桥梁。对于初学者而言，这是打开计算机世界大门的钥匙，能让他们明白日常使用的软件是如何在硬件上运行的；对于有经验的开发者或工程师来说，深入理解计算机组成原理，有助于在系统优化、性能调优等方面获得突破，能从底层逻辑去思考和解决问题。接下来，我们将从计算机系统的整体认知开始，逐步深入到各个核心组件和技术原理，带领大家全面探索计算机组成的奥秘。 二、计算机系统整体认识（一）层次结构计算机系统是一个多层次的结构，从最底层的硬件到最上层的应用软件，每一层都构建在其下一层的基础之上，并且每一层都为上一层提供服务。我们可以将其大致分为以下几个层次（从下到上）： 微程序机器 M₀ ────────────────────── 微指令系统实际机器 M₁ ──────────────────────── 机器语言虚拟机器 ────────────────────────── 操作系统虚拟机器 M₂ ──────────────────────── 汇编语言虚拟机器 M₃ ──────────...</div></div></div></a><a class="pagination-related" href="/4-ji-suan-ji-zu-cheng-yuan-li-tan-suo-zong-xian-yan-jin-guo-cheng/" title="4、计算机组成原理: 探索总线演进过程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-03</div><div class="info-item-2">4、计算机组成原理: 探索总线演进过程</div></div><div class="info-2"><div class="info-item-1">4、计算机组成原理: 探索总线演进过程一、引言在计算机系统的庞大体系中，总线如同人体的 “神经网络”，承担着各部件间数据、地址与控制信号传输的关键任务。从早期结构简单的单总线，到如今复杂且高效的多层 PCI 总线，总线结构的每一次演进，都紧密契合着计算机性能提升与应用场景拓展的需求。本文将以时间为脉络，深度剖析各类总线结构的原理、特性及应用，带读者领略计算机总线技术发展的壮丽图景。 二、单总线结构：计算机总线的起点2.1 结构与组成单总线结构是计算机总线发展的初始形态，其核心是一条系统总线，将 CPU、主存以及各类 I/O 设备（通过 I/O 接口连接）全部连接起来。用文字符号构建的示意框图如下：CPU &lt;-&gt; 系统总线 &lt;-&gt; 主存系统总线 &lt;-&gt; I/O接口1 &lt;-&gt; I/O设备1系统总线 &lt;-&gt; I/O接口2 &lt;-&gt; I/O设备2...系统总线 &lt;-&gt; I/O接口n &lt;-&gt; I/O设备n 2.2 工作原理在单总线结构中，所有部件共享同一条系统总线。当 CPU 需要与主存交换数据时...</div></div></div></a><a class="pagination-related" href="/3-ji-suan-ji-zu-cheng-yuan-li-zong-xian-gai-shu/" title="3、计算机组成原理: 总线概述"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-01</div><div class="info-item-2">3、计算机组成原理: 总线概述</div></div><div class="info-2"><div class="info-item-1">3、计算机组成原理: 总线概述引言在计算机组成原理的知识体系中，总线是连接计算机各个功能部件的关键纽带，如同城市里的交通网络，支撑着数据、指令与控制信号的高效传输。无论是初学者初识计算机内部架构，还是有经验的开发者深入优化系统性能，理解总线的工作机制、分类特性与标准规范，都有着至关重要的意义。 从第一台电子计算机 ENIAC 的庞杂布线，到现代智能手机芯片内部的纳米级总线，总线技术的演进直接推动了计算机性能的飞跃。ENIAC 没有真正意义上的总线，部件间通过数千根导线点对点连接，修改程序需重新布线，效率极低；而如今的超级计算机，通过高速总线将数万颗处理器、PB 级内存与海量存储设备连接，实现每秒亿亿次的运算能力。这种跨越背后，是总线从 “物理连线” 到 “智能交互系统” 的蜕变。 本系列将结合哈工大计算机组成原理课程内容，从基础概念到实际应用，从经典标准到前沿趋势，全方位剖析总线系统。通过字符图、案例分析、工程实践等多元形式，助力初学者构建完整知识框架，为资深从业者提供深度技术参考，最终让读者理解：总线不仅是 “连接线”，更是计算机系统协同运作的 “神经中枢”。 一、总线基础概念...</div></div></div></a><a class="pagination-related" href="/5-ji-suan-ji-zu-cheng-yuan-li-cun-chu-qi-yuan-li-fen-xi/" title="5、计算机组成原理: 存储器原理分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-04</div><div class="info-item-2">5、计算机组成原理: 存储器原理分析</div></div><div class="info-2"><div class="info-item-1">5、计算机组成原理: 存储器原理分析引言在计算机系统的复杂架构中，存储器扮演着极为关键的角色，它是数据与程序的 “栖息地”，支撑着计算机从简单的指令执行到复杂的多任务处理。深入探究存储器的分类、层次结构，不仅有助于理解计算机高效运行的底层逻辑，更能为硬件设计优化、软件性能调优筑牢理论根基。接下来，我们将全方位、深层次地剖析计算机存储器体系。 一、存储器分类全解（一）按存储介质分类存储介质作为存储器的 “物质基础”，直接决定了其存储原理与特性，主要有以下几类：  半导体存储器 技术基础：依托半导体器件构建存储单元，常见的有 TTL（晶体管 - 晶体管逻辑）和 MOS（金属 - 氧化物 - 半导体）技术。TTL 速度较快，但功耗高；MOS 功耗低、集成度高，是现代半导体存储器的主流技术。 易失性特质：所谓 “易失”，指的是一旦断电，存储的信息便会丢失。这是因为其存储依赖于半导体器件的电状态，断电后电状态无法维持。像计算机的内存（RAM），就多采用半导体存储，系统运行时临时数据存于此处，关机重启后需重新加载。   磁表面存储器 核心部件：由磁头和载磁体（如硬盘的盘片、磁带等）构成。磁头...</div></div></div></a><a class="pagination-related" href="/6-ji-suan-ji-zu-cheng-yuan-li-shen-ru-xue-xi-cun-chu-xi-tong/" title="6、计算机组成原理: 深入学习存储系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-04</div><div class="info-item-2">6、计算机组成原理: 深入学习存储系统</div></div><div class="info-2"><div class="info-item-1">计算机组成原理存储系统全解析一、存储系统基础认知1.1 存储系统的核心地位存储系统是计算机的重要组成部分，它负责数据和程序的存储与访问。从计算机的工作原理来看，CPU 执行指令时，需要从存储器中获取指令和操作数，执行完成后再将结果存储回存储器。一个高效的存储系统，能够极大地提升计算机的整体性能。 1.2 存储系统的层次架构为平衡存储容量、访问速度与成本，现代计算机采用层次化存储结构，从高速到低速、从贵到便宜依次为：  寄存器：位于 CPU 内部，速度极快，但容量极小（通常以字节甚至位计），用于暂存 CPU 正在处理的少量数据。比如 CPU 进行加法运算时，两个操作数会先暂存在寄存器中。 高速缓冲存储器（Cache）：介于 CPU 与主存之间，是高速小容量存储器。它缓解了 CPU 与主存的速度差异。当 CPU 要访问主存数据时，先查 Cache，命中则直接读取；缺失则从主存读，并将数据块调入 Cache，方便后续访问。就像我们常用的工具放在手边抽屉（Cache），不用每次都去仓库（主存）找。 主存储器（内存）：计算机的主要内存，存储当前运行的程序与数据，CPU 可直接访问。它是存储...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">lvting.chi</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%AB%98%E9%80%9F%E7%BC%93%E5%86%B2%E5%AD%98%E5%82%A8%E5%99%A8%EF%BC%88Cache%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">深入理解计算机高速缓冲存储器（Cache）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Cache%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">前言：为什么需要 Cache？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Cache-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.2.</span> <span class="toc-text">一、Cache 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%97%AE%E9%A2%98%E7%9A%84%E6%8F%90%E5%87%BA"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 问题的提出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%A8%8B%E5%BA%8F%E8%AE%BF%E9%97%AE%E7%9A%84%E5%B1%80%E9%83%A8%E6%80%A7%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2 程序访问的局部性原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Cache-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.3.</span> <span class="toc-text">二、Cache 的工作原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BB%E5%AD%98%E5%92%8C-Cache-%E7%9A%84%E7%BC%96%E5%9D%80"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 主存和 Cache 的编址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%91%BD%E4%B8%AD%E4%B8%8E%E6%9C%AA%E5%91%BD%E4%B8%AD"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 命中与未命中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Cache-%E7%9A%84%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3 Cache 的命中率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Cache-%E4%B8%BB%E5%AD%98%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%95%88%E7%8E%87"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4 Cache - 主存系统的效率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Cache-%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc-number">1.4.</span> <span class="toc-text">三、Cache 的基本结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97%E5%8A%9F%E8%83%BD%E8%A7%A3%E6%9E%90"><span class="toc-number">1.4.1.</span> <span class="toc-text">3.1 核心模块功能解析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Cache-%E7%9A%84%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C"><span class="toc-number">1.5.</span> <span class="toc-text">四、Cache 的读写操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%AF%BB%E6%93%8D%E4%BD%9C%EF%BC%88%E6%9C%80%E6%A0%B8%E5%BF%83%E7%9A%84%E5%B8%B8%E8%A7%84%E6%93%8D%E4%BD%9C%EF%BC%89"><span class="toc-number">1.5.1.</span> <span class="toc-text">4.1 读操作（最核心的常规操作）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4%EF%BC%88%E4%BB%A5-32-%E4%BD%8D%E5%9C%B0%E5%9D%80%E3%80%81%E5%9D%97%E9%95%BF-4-%E5%AD%97%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">4.1.1 操作步骤（以 32 位地址、块长 4 字为例）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E8%AF%BB%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE%E6%B5%81%E5%90%91"><span class="toc-number">1.5.1.2.</span> <span class="toc-text">4.1.2 读操作数据流向</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%86%99%E6%93%8D%E4%BD%9C%EF%BC%88%E6%A0%B8%E5%BF%83%E6%98%AF%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">4.2 写操作（核心是保证数据一致性）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-%E5%86%99%E7%9B%B4%E8%BE%BE%E6%B3%95%EF%BC%88Write-Through%EF%BC%89"><span class="toc-number">1.5.2.1.</span> <span class="toc-text">4.2.1 写直达法（Write-Through）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-%E5%86%99%E5%9B%9E%E6%B3%95%EF%BC%88Write-Back%EF%BC%89"><span class="toc-number">1.5.2.2.</span> <span class="toc-text">4.2.2 写回法（Write-Back）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-3-%E4%B8%A4%E7%A7%8D%E5%86%99%E7%AD%96%E7%95%A5%E7%9A%84%E5%AF%B9%E6%AF%94%EF%BC%88%E8%A1%A8%E6%A0%BC%E5%8C%96%E6%9B%B4%E6%B8%85%E6%99%B0%EF%BC%89"><span class="toc-number">1.5.2.3.</span> <span class="toc-text">4.2.3 两种写策略的对比（表格化更清晰）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Cache-%E7%9A%84%E6%94%B9%E8%BF%9B%E6%96%B9%E5%90%91%EF%BC%88%E4%BB%8E-%E2%80%9C%E8%83%BD%E7%94%A8%E2%80%9D-%E5%88%B0-%E2%80%9C%E5%A5%BD%E7%94%A8%E2%80%9D%EF%BC%89"><span class="toc-number">1.6.</span> <span class="toc-text">五、Cache 的改进方向（从 “能用” 到 “好用”）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%A2%9E%E5%8A%A0-Cache-%E7%BA%A7%E6%95%B0%EF%BC%88%E5%A4%9A%E7%BA%A7-Cache-%E6%9E%B6%E6%9E%84%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">5.1 增加 Cache 级数（多级 Cache 架构）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%88%86%E7%AB%8B%E7%BC%93%E5%AD%98%EF%BC%88%E6%8C%87%E4%BB%A4-Cache-%E4%B8%8E%E6%95%B0%E6%8D%AE-Cache-%E6%8B%86%E5%88%86%EF%BC%89"><span class="toc-number">1.6.2.</span> <span class="toc-text">5.2 分立缓存（指令 Cache 与数据 Cache 拆分）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%98%A0%E5%B0%84%E4%B8%8E%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%E4%BC%98%E5%8C%96%EF%BC%88%E6%8F%90%E5%8D%87%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%89"><span class="toc-number">1.6.3.</span> <span class="toc-text">5.3 映射与替换算法优化（提升命中率）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Cache-%E4%B8%BB%E5%AD%98%E7%9A%84%E5%9C%B0%E5%9D%80%E6%98%A0%E5%B0%84%EF%BC%88%E6%A0%B8%E5%BF%83%E6%98%AF-%E2%80%9C%E4%B8%BB%E5%AD%98%E5%9D%97%E5%A6%82%E4%BD%95%E6%89%BE-Cache-%E5%9D%97%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">六、Cache - 主存的地址映射（核心是 “主存块如何找 Cache 块）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%9B%B4%E6%8E%A5%E6%98%A0%E5%B0%84%EF%BC%88Direct-Mapping%EF%BC%89%EF%BC%9A%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84-%E2%80%9C%E5%9B%BA%E5%AE%9A%E5%88%86%E9%85%8D%E2%80%9D"><span class="toc-number">1.7.1.</span> <span class="toc-text">6.1 直接映射（Direct Mapping）：最简单的 “固定分配”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.7.1.1.</span> <span class="toc-text">6.1.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2-%E5%9C%B0%E5%9D%80%E7%BB%93%E6%9E%84%E6%8B%86%E5%88%86"><span class="toc-number">1.7.1.2.</span> <span class="toc-text">6.1.2 地址结构拆分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-3-%E5%91%BD%E4%B8%AD%E5%88%A4%E6%96%AD%E6%B5%81%E7%A8%8B"><span class="toc-number">1.7.1.3.</span> <span class="toc-text">6.1.3 命中判断流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-4-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.7.1.4.</span> <span class="toc-text">6.1.4 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%85%A8%E7%9B%B8%E8%81%94%E6%98%A0%E5%B0%84%EF%BC%88Fully-Associative-Mapping%EF%BC%89%EF%BC%9A%E6%9C%80%E7%81%B5%E6%B4%BB%E7%9A%84-%E2%80%9C%E8%87%AA%E7%94%B1%E5%88%86%E9%85%8D%E2%80%9D"><span class="toc-number">1.7.2.</span> <span class="toc-text">6.2 全相联映射（Fully Associative Mapping）：最灵活的 “自由分配”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.7.2.1.</span> <span class="toc-text">6.2.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-%E5%9C%B0%E5%9D%80%E7%BB%93%E6%9E%84%E6%8B%86%E5%88%86"><span class="toc-number">1.7.2.2.</span> <span class="toc-text">6.2.2 地址结构拆分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-%E5%91%BD%E4%B8%AD%E5%88%A4%E6%96%AD%E6%B5%81%E7%A8%8B"><span class="toc-number">1.7.2.3.</span> <span class="toc-text">6.2.3 命中判断流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-4-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.7.2.4.</span> <span class="toc-text">6.2.4 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E7%BB%84%E7%9B%B8%E8%81%94%E6%98%A0%E5%B0%84%EF%BC%88Set-Associative-Mapping%EF%BC%89%EF%BC%9A%E6%8A%98%E4%B8%AD%E6%9C%80%E4%BC%98%E7%9A%84-%E2%80%9C%E5%88%86%E7%BB%84%E8%87%AA%E7%94%B1%E5%88%86%E9%85%8D%E2%80%9D"><span class="toc-number">1.7.3.</span> <span class="toc-text">6.3 组相联映射（Set-Associative Mapping）：折中最优的 “分组自由分配”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.7.3.1.</span> <span class="toc-text">6.3.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-2-%E5%9C%B0%E5%9D%80%E7%BB%93%E6%9E%84%E6%8B%86%E5%88%86"><span class="toc-number">1.7.3.2.</span> <span class="toc-text">6.3.2 地址结构拆分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-3-%E5%91%BD%E4%B8%AD%E5%88%A4%E6%96%AD%E6%B5%81%E7%A8%8B%EF%BC%88%E4%BB%A5-4-%E8%B7%AF%E7%BB%84%E7%9B%B8%E8%81%94%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-number">1.7.3.3.</span> <span class="toc-text">6.3.3 命中判断流程（以 4 路组相联为例）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-4-%E4%BC%98%E7%BC%BA%E7%82%B9%E4%B8%8E%E7%9B%B8%E8%81%94%E5%BA%A6%E9%80%89%E6%8B%A9"><span class="toc-number">1.7.3.4.</span> <span class="toc-text">6.3.4 优缺点与相联度选择</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E4%B8%89%E7%A7%8D%E6%98%A0%E5%B0%84%E6%96%B9%E5%BC%8F%E5%AF%B9%E6%AF%94%EF%BC%88%E8%A1%A8%E6%A0%BC%E5%8C%96%E6%80%BB%E7%BB%93%EF%BC%89"><span class="toc-number">1.7.4.</span> <span class="toc-text">6.4 三种映射方式对比（表格化总结）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%9ACache-%E6%BB%A1%E6%97%B6-%E2%80%9C%E8%AF%A5%E4%B8%A2%E5%93%AA%E5%9D%97%E2%80%9D"><span class="toc-number">1.8.</span> <span class="toc-text">七、替换算法：Cache 满时 “该丢哪块”</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%9C%80%E4%BC%98%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88OPT%EF%BC%89%EF%BC%9A%E7%90%86%E8%AE%BA%E6%A0%87%E6%9D%86"><span class="toc-number">1.8.1.</span> <span class="toc-text">7.1 最优替换算法（OPT）：理论标杆</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.8.1.1.</span> <span class="toc-text">7.1.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-2-%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.8.1.2.</span> <span class="toc-text">7.1.2 示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-3-%E7%89%B9%E7%82%B9"><span class="toc-number">1.8.1.3.</span> <span class="toc-text">7.1.3 特点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%85%88%E8%BF%9B%E5%85%88%E5%87%BA%EF%BC%88FIFO%EF%BC%89%E7%AE%97%E6%B3%95%EF%BC%9A%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84-%E2%80%9C%E5%85%88%E5%88%B0%E5%85%88%E6%8D%A2%E2%80%9D"><span class="toc-number">1.8.2.</span> <span class="toc-text">7.2 先进先出（FIFO）算法：最简单的 “先到先换”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.8.2.1.</span> <span class="toc-text">7.2.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-2-%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.8.2.2.</span> <span class="toc-text">7.2.2 示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-3-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.8.2.3.</span> <span class="toc-text">7.2.3 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E8%BF%91%E6%9C%9F%E6%9C%80%E5%B0%91%E4%BD%BF%E7%94%A8%EF%BC%88LRU%EF%BC%89%E7%AE%97%E6%B3%95%EF%BC%9A%E6%9C%80%E6%8E%A5%E8%BF%91%E6%9C%80%E4%BC%98%E7%9A%84-%E2%80%9C%E8%BF%91%E6%9C%9F%E4%B8%8D%E8%AE%BF%E9%97%AE%E5%88%99%E6%9C%AA%E6%9D%A5%E4%B9%9F%E4%B8%8D%E8%AE%BF%E9%97%AE%E2%80%9D"><span class="toc-number">1.8.3.</span> <span class="toc-text">7.3 近期最少使用（LRU）算法：最接近最优的 “近期不访问则未来也不访问”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-3-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.8.3.1.</span> <span class="toc-text">7.3.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-3-2-%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E7%A1%AC%E4%BB%B6%EF%BC%89"><span class="toc-number">1.8.3.2.</span> <span class="toc-text">7.3.2 实现方式（硬件）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-3-3-%E7%A4%BA%E4%BE%8B%EF%BC%88%E9%93%BE%E8%A1%A8%E6%B3%95%EF%BC%89"><span class="toc-number">1.8.3.3.</span> <span class="toc-text">7.3.3 示例（链表法）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-3-4-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.8.3.4.</span> <span class="toc-text">7.3.4 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E4%BC%AA-LRU%EF%BC%88Pseudo-LRU%EF%BC%89%E7%AE%97%E6%B3%95%EF%BC%9A%E5%B9%B3%E8%A1%A1%E6%80%A7%E8%83%BD%E4%B8%8E%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">1.8.4.</span> <span class="toc-text">7.4 伪 LRU（Pseudo-LRU）算法：平衡性能与复杂度</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-4-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.8.4.1.</span> <span class="toc-text">7.4.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-4-2-%E5%AE%9E%E7%8E%B0%E7%A4%BA%E4%BE%8B%EF%BC%884-%E8%B7%AF%E7%BB%84%E7%9B%B8%E8%81%94%EF%BC%89"><span class="toc-number">1.8.4.2.</span> <span class="toc-text">7.4.2 实现示例（4 路组相联）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-4-3-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.8.4.3.</span> <span class="toc-text">7.4.3 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E9%9A%8F%E6%9C%BA%EF%BC%88Random%EF%BC%89%E7%AE%97%E6%B3%95%EF%BC%9A%E6%9C%80-%E2%80%9C%E4%BD%9B%E7%B3%BB%E2%80%9D-%E7%9A%84%E6%9B%BF%E6%8D%A2"><span class="toc-number">1.8.5.</span> <span class="toc-text">7.5 随机（Random）算法：最 “佛系” 的替换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-1-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">1.8.5.1.</span> <span class="toc-text">7.5.1 核心原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-2-%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.8.5.2.</span> <span class="toc-text">7.5.2 示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-3-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.8.5.3.</span> <span class="toc-text">7.5.3 优缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-6-%E5%9B%9B%E7%A7%8D%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94%EF%BC%88%E8%A1%A8%E6%A0%BC%E5%8C%96%EF%BC%89"><span class="toc-number">1.8.6.</span> <span class="toc-text">7.6 四种替换算法性能对比（表格化）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Cache-%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.9.</span> <span class="toc-text">八、Cache 的性能分析与优化实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%A0%B8%E5%BF%83%E6%80%A7%E8%83%BD%E6%8C%87%E6%A0%87%E4%B8%8E%E8%AE%A1%E7%AE%97"><span class="toc-number">1.9.1.</span> <span class="toc-text">8.1 核心性能指标与计算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-1-%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%88h%EF%BC%89%E4%B8%8E%E6%9C%AA%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%881-h%EF%BC%89"><span class="toc-number">1.9.1.1.</span> <span class="toc-text">8.1.1 命中率（h）与未命中率（1-h）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-2-%E5%B9%B3%E5%9D%87%E8%AE%BF%E9%97%AE%E6%97%B6%E9%97%B4%EF%BC%88tavg%EF%BC%89"><span class="toc-number">1.9.1.2.</span> <span class="toc-text">8.1.2 平均访问时间（tavg）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-3-%E5%8A%A0%E9%80%9F%E6%AF%94%EF%BC%88S%EF%BC%89"><span class="toc-number">1.9.1.3.</span> <span class="toc-text">8.1.3 加速比（S）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-number">1.9.2.</span> <span class="toc-text">8.2 典型场景优化策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-1-%E9%92%88%E5%AF%B9-%E2%80%9C%E5%BE%AA%E7%8E%AF%E7%A8%8B%E5%BA%8F%E2%80%9D-%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-number">1.9.2.1.</span> <span class="toc-text">8.2.1 针对 “循环程序” 的优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-2-%E9%92%88%E5%AF%B9-%E2%80%9C%E5%A4%9A%E6%A0%B8%E5%BF%83%E5%85%B1%E4%BA%AB-Cache%E2%80%9D-%E7%9A%84%E4%BC%98%E5%8C%96%EF%BC%88%E5%A6%82-L3-Cache%EF%BC%89"><span class="toc-number">1.9.2.2.</span> <span class="toc-text">8.2.2 针对 “多核心共享 Cache” 的优化（如 L3 Cache）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-3-%E9%92%88%E5%AF%B9-%E2%80%9C%E5%B5%8C%E5%85%A5%E5%BC%8F%E7%B3%BB%E7%BB%9F%E2%80%9D-%E7%9A%84%E4%BC%98%E5%8C%96%EF%BC%88%E8%B5%84%E6%BA%90%E5%8F%97%E9%99%90%EF%BC%89"><span class="toc-number">1.9.2.3.</span> <span class="toc-text">8.2.3 针对 “嵌入式系统” 的优化（资源受限）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-Cache-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E6%9F%A5%E6%96%B9%E6%B3%95"><span class="toc-number">1.9.3.</span> <span class="toc-text">8.3 Cache 常见问题与排查方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-3-1-%E9%97%AE%E9%A2%98-1%EF%BC%9ACache-%E6%8A%96%E5%8A%A8%EF%BC%88Thrashing%EF%BC%89"><span class="toc-number">1.9.3.1.</span> <span class="toc-text">8.3.1 问题 1：Cache 抖动（Thrashing）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-3-2-%E9%97%AE%E9%A2%98-2%EF%BC%9A%E5%86%99%E5%9B%9E%E6%B3%95%E5%AF%BC%E8%87%B4%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1"><span class="toc-number">1.9.3.2.</span> <span class="toc-text">8.3.2 问题 2：写回法导致的数据丢失</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-3-3-%E9%97%AE%E9%A2%98-3%EF%BC%9A%E5%A4%9A%E6%A0%B8%E5%BF%83-Cache-%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-number">1.9.3.3.</span> <span class="toc-text">8.3.3 问题 3：多核心 Cache 一致性问题</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Cache-%E6%8A%80%E6%9C%AF%E7%9A%84%E5%8F%91%E5%B1%95%E8%B6%8B%E5%8A%BF%EF%BC%882024-2030%EF%BC%89"><span class="toc-number">1.10.</span> <span class="toc-text">九、Cache 技术的发展趋势（2024-2030）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%B8%89%E7%BB%B4%E5%A0%86%E5%8F%A0-Cache%EF%BC%883D-IC-Cache%EF%BC%89%EF%BC%9A%E7%AA%81%E7%A0%B4%E5%AE%B9%E9%87%8F%E4%B8%8E%E5%B8%A6%E5%AE%BD%E7%93%B6%E9%A2%88"><span class="toc-number">1.10.1.</span> <span class="toc-text">9.1 三维堆叠 Cache（3D-IC Cache）：突破容量与带宽瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E6%99%BA%E8%83%BD-Cache-%E7%AE%A1%E7%90%86%EF%BC%88AI-Driven-Cache%EF%BC%89%EF%BC%9A%E5%8A%A8%E6%80%81%E9%80%82%E9%85%8D%E8%B4%9F%E8%BD%BD"><span class="toc-number">1.10.2.</span> <span class="toc-text">9.2 智能 Cache 管理（AI-Driven Cache）：动态适配负载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E9%9D%9E%E6%98%93%E5%A4%B1%E6%80%A7-Cache%EF%BC%88NVC%EF%BC%89%EF%BC%9A%E5%85%BC%E9%A1%BE%E9%80%9F%E5%BA%A6%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8"><span class="toc-number">1.10.3.</span> <span class="toc-text">9.3 非易失性 Cache（NVC）：兼顾速度与数据安全</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-%E5%BC%82%E6%9E%84-Cache-%E6%9E%B6%E6%9E%84%EF%BC%88Heterogeneous-Cache%EF%BC%89%EF%BC%9A%E9%80%82%E9%85%8D%E5%BC%82%E6%9E%84%E8%AE%A1%E7%AE%97"><span class="toc-number">1.10.4.</span> <span class="toc-text">9.4 异构 Cache 架构（Heterogeneous Cache）：适配异构计算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">1.11.</span> <span class="toc-text">十、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E6%A0%B8%E5%BF%83%E4%BB%B7%E5%80%BC%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.11.1.</span> <span class="toc-text">10.1 核心价值回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E5%AD%A6%E4%B9%A0%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.11.2.</span> <span class="toc-text">10.2 学习建议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#10-2-1-%E4%BB%8E-%E2%80%9C%E5%8E%9F%E7%90%86-%E5%AE%9E%E8%B7%B5%E2%80%9D-%E5%85%A5%E9%97%A8"><span class="toc-number">1.11.2.1.</span> <span class="toc-text">10.2.1 从 “原理 + 实践” 入门</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#10-2-2-%E8%BF%9B%E9%98%B6%E8%80%85%EF%BC%9A%E6%B7%B1%E5%85%A5-%E2%80%9C%E4%BC%98%E5%8C%96-%E5%89%8D%E6%B2%BF%E2%80%9D"><span class="toc-number">1.11.2.2.</span> <span class="toc-text">10.2.2 进阶者：深入 “优化 + 前沿”</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/" title="7、计算机组成原理: 深入理解高速缓冲存储器（Cache)">7、计算机组成原理: 深入理解高速缓冲存储器（Cache)</a><time datetime="2025-09-21T13:56:21.000Z" title="发表于 2025-09-21 21:56:21">2025-09-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/6-ji-suan-ji-zu-cheng-yuan-li-shen-ru-xue-xi-cun-chu-xi-tong/" title="6、计算机组成原理: 深入学习存储系统">6、计算机组成原理: 深入学习存储系统</a><time datetime="2025-09-04T13:40:00.000Z" title="发表于 2025-09-04 21:40:00">2025-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/5-ji-suan-ji-zu-cheng-yuan-li-cun-chu-qi-yuan-li-fen-xi/" title="5、计算机组成原理: 存储器原理分析">5、计算机组成原理: 存储器原理分析</a><time datetime="2025-09-04T13:34:06.000Z" title="发表于 2025-09-04 21:34:06">2025-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/4-ji-suan-ji-zu-cheng-yuan-li-tan-suo-zong-xian-yan-jin-guo-cheng/" title="4、计算机组成原理: 探索总线演进过程">4、计算机组成原理: 探索总线演进过程</a><time datetime="2025-09-02T23:37:21.000Z" title="发表于 2025-09-03 07:37:21">2025-09-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/3-ji-suan-ji-zu-cheng-yuan-li-zong-xian-gai-shu/" title="3、计算机组成原理: 总线概述">3、计算机组成原理: 总线概述</a><time datetime="2025-09-01T13:32:42.000Z" title="发表于 2025-09-01 21:32:42">2025-09-01</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By lvting.chi</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

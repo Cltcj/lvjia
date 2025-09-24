@@ -6,7 +6,7 @@
   <link href="http://lvjia.netlify.app/atom.xml" rel="self"/>
   
   <link href="http://lvjia.netlify.app/"/>
-  <updated>2025-09-21T13:52:33.394Z</updated>
+  <updated>2025-09-24T13:21:21.149Z</updated>
   <id>http://lvjia.netlify.app/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>7、计算机组成原理: 深入理解高速缓冲存储器（Cache)</title>
+    <link href="http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/"/>
+    <id>http://lvjia.netlify.app/7-ji-suan-ji-zu-cheng-yuan-li-shen-ru-li-jie-gao-su-huan-chong-cun-chu-qi-cache/</id>
+    <published>2025-09-21T13:56:21.000Z</published>
+    <updated>2025-09-24T13:21:21.149Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;深入理解计算机高速缓冲存储器（Cache）&quot;&gt;&lt;a href=&quot;#深入理解计算机高速缓冲存储器（Cache）&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="计算机组成原理" scheme="http://lvjia.netlify.app/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/"/>
+    
+    
+    <category term="基础知识" scheme="http://lvjia.netlify.app/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
+    
+  </entry>
   
   <entry>
     <title>6、计算机组成原理: 深入学习存储系统</title>
