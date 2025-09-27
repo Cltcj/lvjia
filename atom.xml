@@ -6,7 +6,7 @@
   <link href="http://lvjia.netlify.app/atom.xml" rel="self"/>
   
   <link href="http://lvjia.netlify.app/"/>
-  <updated>2025-09-26T13:09:30.692Z</updated>
+  <updated>2025-09-27T14:05:01.825Z</updated>
   <id>http://lvjia.netlify.app/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>10、计算机组成原理: I/O 系统与数据传输机制</title>
+    <link href="http://lvjia.netlify.app/10-ji-suan-ji-zu-cheng-yuan-li-i-o-xi-tong-yu-shu-ju-chuan-shu-ji-zhi/"/>
+    <id>http://lvjia.netlify.app/10-ji-suan-ji-zu-cheng-yuan-li-i-o-xi-tong-yu-shu-ju-chuan-shu-ji-zhi/</id>
+    <published>2025-09-26T13:12:57.000Z</published>
+    <updated>2025-09-27T14:05:01.825Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;计算机组成原理之-I-O-系统与数据传输机制深度解析&quot;&gt;&lt;a href=&quot;#计算机组成原理之-I-O-系统与数据传输机制深度解析&quot; class=&quot;headerlink&quot; title=&quot;计算机组成原理之 I/O</summary>
+        
+      
+    
+    
+    
+    <category term="计算机组成原理" scheme="http://lvjia.netlify.app/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/"/>
+    
+    
+    <category term="基础知识" scheme="http://lvjia.netlify.app/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
+    
+  </entry>
   
   <entry>
     <title>9、计算机组成原理: I/O系统</title>
